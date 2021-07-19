@@ -1,0 +1,153 @@
+PARSER_BEGIN(Parser)
+
+package parser;
+
+
+public class Parser {
+
+  // Main entry point 
+  public static void main(String args[]) throws ParseException {
+    Parser parser = new Parser(System.in);
+    TokenList tl = parser.Input();
+    tl.print();
+  }
+
+}
+
+PARSER_END(Parser)
+
+
+// ROOT PRODUCTION
+
+TokenList Input(): {
+    Token head;
+}
+{
+    {
+        head = getToken(1);
+    }
+    ltl_expr() <EOF>
+    {
+    return new TokenList( head, getToken(0) );
+    }
+}
+
+
+SKIP:
+{
+   " " 
+|  "\t" 
+|  "\n" 
+|  "\r" 
+}
+
+
+// RESERVED WORDS AND LITERALS 
+
+TOKEN :
+{
+  <LPAREN: "(">
+| <RPAREN: ")">
+| <NOT: "!"> 
+| <AND: "&">
+| <OR: "|">
+| <IMPL: "->">
+| <EQUIV: "<->">
+| <TRUE: "true">
+| <FALSE: "false">
+| <ATOM: ["a"-"z"] (["a"-"z","0"-"9","_"])*>
+| <UNTIL: "U">
+| <SINCE: "S">
+| <HIST: "H">
+| <YEST: "Y">
+| <FIN: "F">
+| <GLOB: "G">
+| <NEXT: "X">
+}
+
+// PRODUCTION RULES 
+
+void ltl_expr():
+{}
+{
+  ltl_equiv()
+}
+
+
+void ltl_equiv():
+{}
+{
+  ltl_impl() (<EQUIV> ltl_impl())*
+}
+
+
+void ltl_impl():
+{}
+{
+  ltl_or() (<IMPL> ltl_or())*
+}
+
+void ltl_or():
+{}
+{
+  ltl_and() (<OR> ltl_and())*
+}
+
+
+void ltl_and():
+{}
+{
+  ltl_binary() (<AND> ltl_binary())*
+} 
+
+void ltl_binary():
+{}
+{
+  ltl_unary() ( binaryop() ltl_unary())*
+}
+
+void ltl_unary():
+{}
+{
+  unaryop() ltl_atom()
+  | ltl_atom()
+}
+
+void ltl_atom():
+{}
+{
+    prop_atom()
+    | <LPAREN> ltl_expr() <RPAREN>
+}
+
+void prop_atom():
+{}
+{
+  <ATOM>
+  | <TRUE>
+  | <FALSE> 
+}
+
+
+// OPERATORS 
+
+void unaryop():
+{}
+{
+  <NOT> 
+| <HIST> 
+| <YEST>
+| <FIN>
+| <GLOB>
+| <NEXT>
+
+}
+
+void binaryop():
+{}
+{
+  <UNTIL> 
+| <SINCE>
+}
+
+
