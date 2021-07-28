@@ -5,7 +5,7 @@ package parser;
 
 public class Parser implements ParserConstants {
 
-  // Main entry point 
+  // Main entry point
   public static void main(String args[]) throws ParseException {
     Parser parser = new Parser(System.in);
     TokenList tl = parser.Input();
@@ -15,10 +15,10 @@ public class Parser implements ParserConstants {
 // ROOT PRODUCTION
   static final public 
 TokenList Input() throws ParseException {Token head;
-head = getToken(1);
+head = token;
     ltl_expr();
     jj_consume_token(0);
-{if ("" != null) return new TokenList( head, getToken(0) );}
+{if ("" != null) return new TokenList( head.next, getToken(0) );}
     throw new Error("Missing return statement in function");
 }
 

@@ -128,5 +128,12 @@ public class Token implements java.io.Serializable {
     return newToken(ofKind, null);
   }
 
+  /**
+   * Returns a new token which is the deep copy of the token on which was called
+   */
+  public Token deepCopy() {
+    return newToken(this.kind, this.image);
+  }
+
 }
 /* JavaCC - OriginalChecksum=2f0f1c81aefc18bc032a1604ab96d4a0 (do not edit this line) */

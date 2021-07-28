@@ -24,11 +24,11 @@ TokenList Input(): {
 }
 {
     {
-        head = getToken(1);
+        head = token;
     }
     ltl_expr() <EOF>
     {
-    return new TokenList( head, getToken(0) );
+    return new TokenList( head.next, getToken(0) );
     }
 }
 
@@ -103,14 +103,14 @@ void ltl_and():
 void ltl_binary():
 {}
 {
-  ltl_unary() ( binaryop() ltl_unary())*
+    ltl_unary() ( binaryop() ltl_unary() )*
 }
 
 void ltl_unary():
 {}
 {
-  unaryop() ltl_atom()
-  | ltl_atom()
+    unaryop() ltl_atom()
+    | ltl_atom()
 }
 
 void ltl_atom():
@@ -134,14 +134,14 @@ void prop_atom():
 void unaryop():
 {}
 {
-  <NOT> 
-| <HIST> 
+ <NOT>
+| <HIST>
 | <YEST>
 | <FIN>
 | <GLOB>
 | <NEXT>
-
 }
+
 
 void binaryop():
 {}
@@ -149,5 +149,6 @@ void binaryop():
   <UNTIL> 
 | <SINCE>
 }
+
 
 
