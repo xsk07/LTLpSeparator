@@ -5,7 +5,7 @@ package parser;
 
 public class Parser {
 
-  // Main entry point 
+  // Main entry point
   public static void main(String args[]) throws ParseException {
     Parser parser = new Parser(System.in);
     TokenList tl = parser.Input();
@@ -58,6 +58,7 @@ TOKEN :
 | <ATOM: ["a"-"z"] (["a"-"z","0"-"9","_"])*>
 | <UNTIL: "U">
 | <SINCE: "S">
+| <ONCE: "O">
 | <HIST: "H">
 | <YEST: "Y">
 | <FIN: "F">
@@ -135,6 +136,7 @@ void unaryop():
 {}
 {
  <NOT>
+| <ONCE>
 | <HIST>
 | <YEST>
 | <FIN>

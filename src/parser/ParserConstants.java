@@ -35,15 +35,17 @@ public interface ParserConstants {
   /** RegularExpression Id. */
   int SINCE = 16;
   /** RegularExpression Id. */
-  int HIST = 17;
+  int ONCE = 17;
   /** RegularExpression Id. */
-  int YEST = 18;
+  int HIST = 18;
   /** RegularExpression Id. */
-  int FIN = 19;
+  int YEST = 19;
   /** RegularExpression Id. */
-  int GLOB = 20;
+  int FIN = 20;
   /** RegularExpression Id. */
-  int NEXT = 21;
+  int GLOB = 21;
+  /** RegularExpression Id. */
+  int NEXT = 22;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -67,6 +69,7 @@ public interface ParserConstants {
     "<ATOM>",
     "\"U\"",
     "\"S\"",
+    "\"O\"",
     "\"H\"",
     "\"Y\"",
     "\"F\"",

@@ -122,6 +122,7 @@ void ltl_expr() throws ParseException {
   static final public void ltl_unary() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case NOT:
+    case ONCE:
     case HIST:
     case YEST:
     case FIN:
@@ -195,6 +196,10 @@ void unaryop() throws ParseException {
       jj_consume_token(NOT);
       break;
       }
+    case ONCE:{
+      jj_consume_token(ONCE);
+      break;
+      }
     case HIST:{
       jj_consume_token(HIST);
       break;
@@ -255,7 +260,7 @@ void unaryop() throws ParseException {
 	   jj_la1_init_0();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x800,0x400,0x200,0x100,0x18000,0x3e70a0,0x7020,0x7000,0x3e0080,0x18000,};
+	   jj_la1_0 = new int[] {0x800,0x400,0x200,0x100,0x18000,0x7e70a0,0x7020,0x7000,0x7e0080,0x18000,};
 	}
 
   /** Constructor with InputStream. */
@@ -401,7 +406,7 @@ void unaryop() throws ParseException {
   /** Generate ParseException. */
   static public ParseException generateParseException() {
 	 jj_expentries.clear();
-	 boolean[] la1tokens = new boolean[22];
+	 boolean[] la1tokens = new boolean[23];
 	 if (jj_kind >= 0) {
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
@@ -415,7 +420,7 @@ void unaryop() throws ParseException {
 		 }
 	   }
 	 }
-	 for (int i = 0; i < 22; i++) {
+	 for (int i = 0; i < 23; i++) {
 	   if (la1tokens[i]) {
 		 jj_expentry = new int[1];
 		 jj_expentry[0] = i;

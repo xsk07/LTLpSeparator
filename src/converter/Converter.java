@@ -20,6 +20,22 @@ public class Converter {
             ArrayList predQ = new ArrayList();
             ArrayList nextQ = new ArrayList();
             switch (ti){
+                case "O": // O(q) == (q S true)
+                    f = endQ(al, i);
+                    d = f-i;
+                    needPar = needParenteses(al, i, f);
+                    al.remove(i);
+                    // begin: elimination of redundant parentheses surrounding an atom
+                    if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
+                        al.remove(--f);
+                        al.remove(i); f -= 1;
+                    } // end
+                    if(needPar) { predQ.add("("); f += 1; }
+                    nextQ = new ArrayList<>(Arrays.asList("S", "true"));
+                    if(needPar) { nextQ.add(")"); }
+                    al.addAll(i, predQ);
+                    al.addAll(f, nextQ);
+                    break;
                 case "H": // H(q) == !(!q S false)
                     f = endQ(al, i);
                     d = f-i;
