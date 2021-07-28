@@ -25,7 +25,7 @@ public class TokenList {
         return tail;
     }
 
-    /** Metodo per la copia in profondità di una TokenList */
+    /** TokenList deep copy. */
     public TokenList deepCopy() {
         TokenList cl = new TokenList();
         Token prev = null;
