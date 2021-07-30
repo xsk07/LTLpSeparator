@@ -110,8 +110,7 @@ void ltl_binary():
 void ltl_unary():
 {}
 {
-    unaryop() ltl_atom()
-    | ltl_atom()
+    (unaryop())* ltl_atom()
 }
 
 void ltl_atom():

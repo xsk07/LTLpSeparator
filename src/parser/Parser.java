@@ -128,7 +128,25 @@ void ltl_expr() throws ParseException {
     case FIN:
     case GLOB:
     case NEXT:{
-      unaryop();
+      label_6:
+      while (true) {
+        unaryop();
+        switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+        case NOT:
+        case ONCE:
+        case HIST:
+        case YEST:
+        case FIN:
+        case GLOB:
+        case NEXT:{
+          ;
+          break;
+          }
+        default:
+          jj_la1[5] = jj_gen;
+          break label_6;
+        }
+      }
       ltl_atom();
       break;
       }
@@ -140,7 +158,7 @@ void ltl_expr() throws ParseException {
       break;
       }
     default:
-      jj_la1[5] = jj_gen;
+      jj_la1[6] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -161,7 +179,7 @@ void ltl_expr() throws ParseException {
       break;
       }
     default:
-      jj_la1[6] = jj_gen;
+      jj_la1[7] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -182,7 +200,7 @@ void ltl_expr() throws ParseException {
       break;
       }
     default:
-      jj_la1[7] = jj_gen;
+      jj_la1[8] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -221,7 +239,7 @@ void unaryop() throws ParseException {
       break;
       }
     default:
-      jj_la1[8] = jj_gen;
+      jj_la1[9] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -238,7 +256,7 @@ void unaryop() throws ParseException {
       break;
       }
     default:
-      jj_la1[9] = jj_gen;
+      jj_la1[10] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -254,13 +272,13 @@ void unaryop() throws ParseException {
   static public Token jj_nt;
   static private int jj_ntk;
   static private int jj_gen;
-  static final private int[] jj_la1 = new int[10];
+  static final private int[] jj_la1 = new int[11];
   static private int[] jj_la1_0;
   static {
 	   jj_la1_init_0();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x800,0x400,0x200,0x100,0x18000,0x7e70a0,0x7020,0x7000,0x7e0080,0x18000,};
+	   jj_la1_0 = new int[] {0x800,0x400,0x200,0x100,0x18000,0x7e0080,0x7e70a0,0x7020,0x7000,0x7e0080,0x18000,};
 	}
 
   /** Constructor with InputStream. */
@@ -281,7 +299,7 @@ void unaryop() throws ParseException {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 10; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -295,7 +313,7 @@ void unaryop() throws ParseException {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 10; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -312,7 +330,7 @@ void unaryop() throws ParseException {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 10; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -330,7 +348,7 @@ void unaryop() throws ParseException {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 10; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -346,7 +364,7 @@ void unaryop() throws ParseException {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 10; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -355,7 +373,7 @@ void unaryop() throws ParseException {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 10; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 11; i++) jj_la1[i] = -1;
   }
 
   static private Token jj_consume_token(int kind) throws ParseException {
@@ -411,7 +429,7 @@ void unaryop() throws ParseException {
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
 	 }
-	 for (int i = 0; i < 10; i++) {
+	 for (int i = 0; i < 11; i++) {
 	   if (jj_la1[i] == jj_gen) {
 		 for (int j = 0; j < 32; j++) {
 		   if ((jj_la1_0[i] & (1<<j)) != 0) {

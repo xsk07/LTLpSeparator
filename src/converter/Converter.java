@@ -1,9 +1,12 @@
 package converter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.regex.Pattern;
+
+import static converter.ConverterConstants.*;
 
 
-/** Formula converter. */
+/** Formulas converter. */
 public class Converter {
 
     public static void Converter(){}
@@ -12,19 +15,22 @@ public class Converter {
      * Converts a formula containing unary temporal operators into an equivalent form
      * without them.
      */
-    public static void toBinaryForm(ArrayList<String> al) {
-        // al: ArrayList of token images
+    public static void toBinaryForm(ArrayList<String> al) { /* al: ArrayList of token images */
         for(int i = 0; i < al.size(); i++){
-            String ti = al.get(i);
-            int f, d; boolean needPar;
-            ArrayList predQ = new ArrayList();
-            ArrayList nextQ = new ArrayList();
+            String ti = al.get(i); // i-th token image
+            int f; // the last index of the formula referred by the unary operator
+            int d; /* difference between the end and the beginning indexes of the formula inside
+            the parentheses */
+            boolean needPar; // tells if are need parentheses around a formula
+            ArrayList predQ = new ArrayList(); /* array list of token images to add before the last index if q */
+            ArrayList nextQ = new ArrayList(); /* array list of token images to add after the last index of q */
+            /* where q is the formula on which the unary operator is applied to */
             switch (ti){
-                case "O": // O(q) == (q S true)
+                case ONCE: // rewriting rule: O(q) =>* (q S true)
                     f = endQ(al, i);
                     d = f-i;
-                    needPar = needParenteses(al, i, f);
-                    al.remove(i);
+                    needPar = needParentheses(al, i, f);
+                    al.remove(i); // deletes the token image relative to the unary operator
                     // begin: elimination of redundant parentheses surrounding an atom
                     if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
                         al.remove(--f);
@@ -36,7 +42,7 @@ public class Converter {
                     al.addAll(i, predQ);
                     al.addAll(f, nextQ);
                     break;
-                case "H": // H(q) == !(!q S false)
+                case HIST: // rewriting rule: H(q) =>* !(!q S false)
                     f = endQ(al, i);
                     d = f-i;
                     al.remove(i);
@@ -50,10 +56,10 @@ public class Converter {
                     al.addAll(i, predQ);
                     al.addAll(f, nextQ);
                     break;
-                case "Y": // Y(q) == (q S false)
+                case YEST: // rewriting rule: Y(q) =>* (q S false)
                     f = endQ(al, i);
                     d = f-i;
-                    needPar = needParenteses(al, i, f);
+                    needPar = needParentheses(al, i, f);
                     al.remove(i);
                     // begin: elimination of redundant parentheses surrounding an atom
                     if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
@@ -66,10 +72,10 @@ public class Converter {
                     al.addAll(i, predQ);
                     al.addAll(f, nextQ);
                     break;
-                case "F": // F(q) == (q U true)
+                case FIN: // rewriting rule: F(q) =>* (q U true)
                     f = endQ(al, i);
                     d = f-i;
-                    needPar = needParenteses(al, i, f);
+                    needPar = needParentheses(al, i, f);
                     al.remove(i);
                     // begin: elimination of redundant parentheses surrounding an atom
                     if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
@@ -82,7 +88,7 @@ public class Converter {
                     al.addAll(i, predQ);
                     al.addAll(f, nextQ);
                     break;
-                case "G": // G(q) == !(!q U true)
+                case GLOB: // rewriting rule: G(q) =>* !(!q U true)
                     f = endQ(al, i);
                     d = f-i;
                     al.remove(i);
@@ -96,10 +102,10 @@ public class Converter {
                     al.addAll(i, predQ);
                     al.addAll(f, nextQ);
                     break;
-                case "X": // X(q) == (q U false)
+                case NEXT: // rewriting rule: X(q) =>* (q U false)
                     f = endQ(al, i);
                     d = f-i;
-                    needPar = needParenteses(al, i, f);
+                    needPar = needParentheses(al, i, f);
                     al.remove(i);
                     // begin: elimination of redundant parentheses surrounding an atom
                     if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
@@ -115,31 +121,62 @@ public class Converter {
                 default: break;
             }
         }
-
     }
 
-    // pre: 0 <= index < al.size()
+    /* pre: 0 <= index < al.size() && #(left parentheses) == #(right parentheses) */
+    public static int beginQ(ArrayList<String> al, int index){
+        int i = index;
+        String t = al.get(--i);
+        if(t == RPAREN) {
+            int count = 1;
+            while(count > 0) {
+                String nt = al.get(--i);
+                if(nt == RPAREN) count++;
+                if(nt == LPAREN) count--;
+            }
+        }
+        return i;
+    }
+
+
+    /* pre: 0 <= index < al.size() && #(left parentheses) == #(right parentheses) */
     public static int endQ(ArrayList<String> al, int index){
         int f = index;
-        String t = al.get(++f);
-        if(t == "(") {
-            int count = 1;
-            while(count > 0){
-                String nt = al.get(++f);
-                if(nt == "(") count++;
-                if(nt == ")") count--;
+        String nt = al.get(++f);
+        if(Pattern.matches(unaryOperator, nt)) {
+            while(Pattern.matches(unaryOperator, nt)){
+                nt = al.get(++f);
             }
+        }
+        if(nt == LPAREN) { f = closingParenthesis(al, f); }
+        return f;
+    }
+
+    /** Returns the position of the right parenthesis corresponding to the left one
+     * at position "index" got in input */
+    /* pre: al.get(i) == "(" && #(left parentheses) == #(right parentheses) */
+    public static int closingParenthesis(ArrayList<String> al, int index) {
+        int f = index;
+        String nt = al.get(f);
+        int count = 1;
+        while(count > 0){
+            nt = al.get(++f);
+            if(nt == LPAREN) count++;
+            if(nt == RPAREN) count--;
         }
         return f;
     }
 
-    // pre: i <= f
-    public static boolean needParenteses(ArrayList<String> al, int i, int f){
+    /** It tells us if is required to surround the formula with parentheses */
+    /* pre: i <= f */
+    public static boolean needParentheses(ArrayList<String> al, int i, int f){
         boolean need = true;
-        if (i > 0){
-            String pred = al.get(i-1);
-            String next = al.get(f+1);
-            if (pred == "(" && next == ")") need = false;
+        if (i > 0  && f < al.size()-1) { /* if the two indexes are inside the ArrayList range then */
+            String prec = al.get(i-1); // token image preceding the formula
+            String follow = al.get(f+1); // token image following the formula
+            /* if the formula is preceded by a left parenthesis and followed by a right one
+            then no further parentheses are needed */
+            if (prec == LPAREN && follow == RPAREN) need = false;
         }
         return need;
     }
