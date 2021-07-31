@@ -2,9 +2,7 @@ package converter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Pattern;
-
 import static converter.ConverterConstants.*;
-
 
 /** Formulas converter. */
 public class Converter {
@@ -15,15 +13,15 @@ public class Converter {
      * Converts a formula containing unary temporal operators into an equivalent form
      * without them.
      */
-    public static void toBinaryForm(ArrayList<String> al) { /* al: ArrayList of token images */
+    public static void toBinaryForm(ArrayList<String> al) { // al: ArrayList of token images
         for(int i = 0; i < al.size(); i++){
             String ti = al.get(i); // i-th token image
             int f; // the last index of the formula referred by the unary operator
             int d; /* difference between the end and the beginning indexes of the formula inside
             the parentheses */
-            boolean needPar; // tells if are need parentheses around a formula
-            ArrayList predQ = new ArrayList(); /* array list of token images to add before the last index if q */
-            ArrayList nextQ = new ArrayList(); /* array list of token images to add after the last index of q */
+            boolean needPar; // tells if are needed parentheses around a formula
+            ArrayList predQ = new ArrayList(); /* array list of the token images to add before the first index of q */
+            ArrayList nextQ = new ArrayList(); /* array list of the token images to add after the last index of q */
             /* where q is the formula on which the unary operator is applied to */
             switch (ti){
                 case ONCE: // rewriting rule: O(q) =>* (q S true)
@@ -123,6 +121,7 @@ public class Converter {
         }
     }
 
+    /** Returns the position of the first formula's token. */
     /* pre: 0 <= index < al.size() && #(left parentheses) == #(right parentheses) */
     public static int beginQ(ArrayList<String> al, int index){
         int i = index;
@@ -138,7 +137,7 @@ public class Converter {
         return i;
     }
 
-
+    /** Returns the position of the last formula's token. */
     /* pre: 0 <= index < al.size() && #(left parentheses) == #(right parentheses) */
     public static int endQ(ArrayList<String> al, int index){
         int f = index;
@@ -153,7 +152,7 @@ public class Converter {
     }
 
     /** Returns the position of the right parenthesis corresponding to the left one
-     * at position "index" got in input */
+     * at position "index" got in input. */
     /* pre: al.get(i) == "(" && #(left parentheses) == #(right parentheses) */
     public static int closingParenthesis(ArrayList<String> al, int index) {
         int f = index;
@@ -167,7 +166,7 @@ public class Converter {
         return f;
     }
 
-    /** It tells us if is required to surround the formula with parentheses */
+    /** Tells us if is required to surround the formula with parentheses. */
     /* pre: i <= f */
     public static boolean needParentheses(ArrayList<String> al, int i, int f){
         boolean need = true;
