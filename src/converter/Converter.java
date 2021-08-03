@@ -67,7 +67,12 @@ public class Converter {
         return f;
     }
 
-    /** rewriting rule: H(q) =>* !(!q S false) */
+    /** Rewriting rule: H(q) =>* !(!q S false).
+      * @param al An array list of tokens
+      * @param i
+      * @param f
+      * @return Returns the end index of the rewritten formula.
+      */
     public static int ruleH(ArrayList<String> al, int i, int f){
         al.remove(i);
         f = removeNeedlessParen(al, i, f);
