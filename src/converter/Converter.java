@@ -16,125 +16,177 @@ public class Converter {
     public static void toBinaryForm(ArrayList<String> al) { // al: ArrayList of token images
         for(int i = 0; i < al.size(); i++){
             String ti = al.get(i); // i-th token image
-            int f; // the last index of the formula referred by the unary operator
-            int d; /* difference between the end and the beginning indexes of the formula inside
-            the parentheses */
-            boolean needPar; // tells if are needed parentheses around a formula
-            ArrayList predQ = new ArrayList(); /* array list of the token images to add before the first index of q */
-            ArrayList nextQ = new ArrayList(); /* array list of the token images to add after the last index of q */
-            /* where q is the formula on which the unary operator is applied to */
+            int f; // the last index of the formula in the scope of the unary operator
             switch (ti){
-                case ONCE: // rewriting rule: O(q) =>* (q S true)
+                case ONCE:
                     f = endQ(al, i);
-                    d = f-i;
-                    needPar = needParentheses(al, i, f);
-                    al.remove(i); // deletes the token image relative to the unary operator
-                    // begin: elimination of redundant parentheses surrounding an atom
-                    if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
-                        al.remove(--f);
-                        al.remove(i); f -= 1;
-                    } // end
-                    if(needPar) { predQ.add("("); f += 1; }
-                    nextQ = new ArrayList<>(Arrays.asList("S", "true"));
-                    if(needPar) { nextQ.add(")"); }
-                    al.addAll(i, predQ);
-                    al.addAll(f, nextQ);
+                    ruleO(al, i, f);
                     break;
-                case HIST: // rewriting rule: H(q) =>* !(!q S false)
+                case HIST:
                     f = endQ(al, i);
-                    d = f-i;
-                    al.remove(i);
-                    // begin: elimination of redundant parentheses surrounding an atom
-                    if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
-                        al.remove(--f);
-                        al.remove(i); f -= 1;
-                    } // end
-                    predQ = new ArrayList<>(Arrays.asList("!", "(", "!")); f += 3;
-                    nextQ = new ArrayList<>(Arrays.asList("S", "false", ")"));
-                    al.addAll(i, predQ);
-                    al.addAll(f, nextQ);
+                    ruleH(al, i, f);
                     break;
-                case YEST: // rewriting rule: Y(q) =>* (q S false)
+                case YEST:
                     f = endQ(al, i);
-                    d = f-i;
-                    needPar = needParentheses(al, i, f);
-                    al.remove(i);
-                    // begin: elimination of redundant parentheses surrounding an atom
-                    if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
-                        al.remove(--f);
-                        al.remove(i); f -= 1;
-                    } // end
-                    if(needPar) { predQ.add("("); f += 1; }
-                    nextQ = new ArrayList<>(Arrays.asList("S", "false"));
-                    if(needPar) { nextQ.add(")"); }
-                    al.addAll(i, predQ);
-                    al.addAll(f, nextQ);
+                    ruleY(al, i, f);
                     break;
-                case FIN: // rewriting rule: F(q) =>* (q U true)
+                case FIN:
                     f = endQ(al, i);
-                    d = f-i;
-                    needPar = needParentheses(al, i, f);
-                    al.remove(i);
-                    // begin: elimination of redundant parentheses surrounding an atom
-                    if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
-                        al.remove(--f);
-                        al.remove(i); f -= 1;
-                    } // end
-                    if(needPar) { predQ.add("("); f += 1; }
-                    nextQ = new ArrayList<>(Arrays.asList("U", "true"));
-                    if(needPar) { nextQ.add(")"); }
-                    al.addAll(i, predQ);
-                    al.addAll(f, nextQ);
+                    ruleF(al, i, f);
                     break;
-                case GLOB: // rewriting rule: G(q) =>* !(!q U true)
+                case GLOB:
                     f = endQ(al, i);
-                    d = f-i;
-                    al.remove(i);
-                    // begin: elimination of redundant parentheses surrounding an atom
-                    if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
-                        al.remove(--f);
-                        al.remove(i); f -= 1;
-                    } // end
-                    predQ = new ArrayList<>(Arrays.asList("!", "(", "!")); f += 3;
-                    nextQ = new ArrayList<>(Arrays.asList("U", "true", ")"));
-                    al.addAll(i, predQ);
-                    al.addAll(f, nextQ);
+                    ruleG(al, i, f);
                     break;
-                case NEXT: // rewriting rule: X(q) =>* (q U false)
+                case NEXT:
                     f = endQ(al, i);
-                    d = f-i;
-                    needPar = needParentheses(al, i, f);
-                    al.remove(i);
-                    // begin: elimination of redundant parentheses surrounding an atom
-                    if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
-                        al.remove(--f);
-                        al.remove(i); f -= 1;
-                    } // end
-                    if(needPar) { predQ.add("("); f += 1; }
-                    nextQ = new ArrayList<>(Arrays.asList("U", "false"));
-                    if(needPar) { nextQ.add(")"); }
-                    al.addAll(i, predQ);
-                    al.addAll(f, nextQ);
+                    ruleX(al, i, f);
                     break;
                 default: break;
             }
         }
     }
 
+    /** rewriting rule: O(q) =>* (q S true) */
+    public static int ruleO(ArrayList<String> al, int i, int f){
+        boolean needPar = needParentheses(al, i, f); // tells if are needed parentheses around a formula
+        /* predQ: array list of the token images to add before the first index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList predQ = new ArrayList<String>();
+        /* nextQ: array list of the token images to add after the last index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList nextQ = new ArrayList<String>();
+        al.remove(i); // deletes the token image relative to the unary operator
+        f = removeNeedlessParen(al, i, f);
+        if(needPar) { predQ.add("("); f += 1; }
+        nextQ.addAll(Arrays.asList("S", "true"));
+        if(needPar) { nextQ.add(")"); }
+        // updateFormula(al, i, f, predQ, nextQ)
+        al.addAll(i, predQ);
+        al.addAll(f, nextQ);
+        return f;
+    }
+
+    /** rewriting rule: H(q) =>* !(!q S false) */
+    public static int ruleH(ArrayList<String> al, int i, int f){
+        al.remove(i);
+        f = removeNeedlessParen(al, i, f);
+        /* predQ: array list of the token images to add before the first index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList predQ = new ArrayList<>(Arrays.asList("!", "(", "!")); f += 3;
+        /* nextQ: array list of the token images to add after the last index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList nextQ = new ArrayList<>(Arrays.asList("S", "false", ")"));
+        al.addAll(i, predQ);
+        al.addAll(f, nextQ);
+        return f;
+    }
+
+    /** rewriting rule: Y(q) =>* (q S false) */
+    public static int ruleY(ArrayList<String> al, int i, int f){
+        boolean needPar = needParentheses(al, i, f); // tells if are needed parentheses around a formula
+        al.remove(i);
+        f = removeNeedlessParen(al, i, f);
+        /* predQ: array list of the token images to add before the first index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList<String> predQ = new ArrayList<>();
+        if(needPar) { predQ.add("("); f += 1; }
+        /* nextQ: array list of the token images to add after the last index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList nextQ = new ArrayList<>(Arrays.asList("S", "false"));
+        if(needPar) { nextQ.add(")"); }
+        al.addAll(i, predQ);
+        al.addAll(f, nextQ);
+        return f;
+    }
+
+    /** rewriting rule: F(q) =>* (q U true) */
+    public static int ruleF(ArrayList<String> al, int i, int f){
+        boolean needPar = needParentheses(al, i, f); // tells if are needed parentheses around a formula
+        al.remove(i);
+        f = removeNeedlessParen(al, i , f);
+        /* predQ: array list of the token images to add before the first index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList<String> predQ = new ArrayList<>();
+        if(needPar) { predQ.add("("); f += 1; }
+        /* nextQ: array list of the token images to add after the last index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList<String> nextQ = new ArrayList<>(Arrays.asList("U", "true"));
+        if(needPar) { nextQ.add(")"); }
+        al.addAll(i, predQ);
+        al.addAll(f, nextQ);
+        return f;
+    }
+
+    /** rewriting rule: G(q) =>* !(!q U true) */
+    public static int ruleG(ArrayList<String> al, int i, int f){
+        al.remove(i);
+        f = removeNeedlessParen(al, i, f);
+        /* predQ: array list of the token images to add before the first index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList<String> predQ = new ArrayList<>(Arrays.asList("!", "(", "!")); f += 3;
+        /* nextQ: array list of the token images to add after the last index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList<String> nextQ = new ArrayList<>(Arrays.asList("U", "true", ")"));
+        al.addAll(i, predQ);
+        al.addAll(f, nextQ);
+        return f;
+    }
+
+    /** rewriting rule: X(q) =>* (q U false) */
+    public static int ruleX(ArrayList<String> al, int i, int f){
+        boolean needPar = needParentheses(al, i, f); // tells if are needed parentheses around a formula
+        al.remove(i);
+        f = removeNeedlessParen(al, i, f);
+        /* predQ: array list of the token images to add before the first index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList predQ = new ArrayList<String>();
+        if(needPar) { predQ.add("("); f += 1; }
+        /* nextQ: array list of the token images to add after the last index of q, where
+        q is the formula in the scope of the unary operator */
+        ArrayList<String> nextQ = new ArrayList<>(Arrays.asList("U", "false"));
+        if(needPar) { nextQ.add(")"); }
+        al.addAll(i, predQ);
+        al.addAll(f, nextQ);
+        return f;
+    }
+
+    /** Removes redundant parentheses surrounding an atom and returns f.
+     * If no parentheses are removed then the returning f will be the same got in input. */
+    public static int removeNeedlessParen(ArrayList<String> al, int i, int f){
+        int d = f-i; //difference between the end and the beginning indexes of the formula
+        if(d == 3 && al.get(i) == "(" && al.get(f-1) == ")"){
+            al.remove(--f);
+            al.remove(i); f -= 1;
+        }
+        return f;
+    }
+
     /** Returns the position of the first formula's token. */
-    /* pre: 0 <= index < al.size() && #(left parentheses) == #(right parentheses) */
+    /* pre: 0 < index < al.size() && #(left parentheses) == #(right parentheses) */
     public static int beginQ(ArrayList<String> al, int index){
-        int i = index;
-        String t = al.get(--i);
-        if(t == RPAREN) {
-            int count = 1;
-            while(count > 0) {
-                String nt = al.get(--i);
-                if(nt == RPAREN) count++;
-                if(nt == LPAREN) count--;
+        String nt = al.get(--index);
+        if(Pattern.matches(unaryOperator, nt)) {
+            while(Pattern.matches(unaryOperator, nt)){
+                nt = al.get(++index);
             }
         }
-        return i;
+        if(nt == LPAREN) { index = closingParenthesis(al, index); }
+        return index;
+    }
+
+    /** Returns the position of the left parenthesis corresponding to the right one
+     * at position "index" got in input. */
+    /* pre: al.get(index) == ")" && #(left parentheses) == #(right parentheses) */
+    public static int openingParenthesis(ArrayList<String> al, int index) {
+        String nt = al.get(index);
+        int count = 1;
+        while(count > 0){
+            nt = al.get(--index);
+            if(nt == LPAREN) count--;
+            if(nt == RPAREN) count++;
+        }
+        return index;
     }
 
     /** Returns the position of the last formula's token. */
@@ -145,6 +197,7 @@ public class Converter {
         if(Pattern.matches(unaryOperator, nt)) {
             while(Pattern.matches(unaryOperator, nt)){
                 nt = al.get(++f);
+                System.out.println(nt);
             }
         }
         if(nt == LPAREN) { f = closingParenthesis(al, f); }
@@ -153,7 +206,7 @@ public class Converter {
 
     /** Returns the position of the right parenthesis corresponding to the left one
      * at position "index" got in input. */
-    /* pre: al.get(i) == "(" && #(left parentheses) == #(right parentheses) */
+    /* pre: al.get(index) == "(" && #(left parentheses) == #(right parentheses) */
     public static int closingParenthesis(ArrayList<String> al, int index) {
         int f = index;
         String nt = al.get(f);
