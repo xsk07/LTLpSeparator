@@ -1,0 +1,136 @@
+options { IGNORE_CASE = false; }
+
+PARSER_BEGIN(Parser)
+
+package parser;
+
+    public class Parser {
+
+    /* Main entry point */
+    public static void main(String args[]) {
+        System.out.println("Reading from standard input...");
+        Parser t = new Parser(System.in);
+        try {
+            SimpleNode n = t.Input();
+            n.dump("");
+            System.out.println("Thank you.");
+        } catch (Exception e) {
+            System.out.println("Oops.");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+
+PARSER_END(Parser)
+
+SKIP:
+{
+   " "
+|  "\t"
+|  "\n"
+|  "\r"
+}
+
+/* RESERVED WORDS AND LITERALS */
+
+TOKEN :
+{
+  <LPAREN: "(">
+| <RPAREN: ")">
+| <AND: "&">
+| <OR: "|">
+| <IMPL: "->">
+| <EQUIV: "<->">
+}
+
+TOKEN : {
+ <ATOM: <TRUE> | <FALSE> | ["a"-"z"] (["a"-"z","0"-"9","_"])* >
+| <#TRUE: "true">
+| <#FALSE: "false">
+}
+
+TOKEN : {
+ <UNARY: <NOT> | <ONCE> | <HIST> | <YEST> | <FIN> | <GLOB> | <NEXT> >
+ | <#NOT: "!">
+ | <#ONCE: "O">
+ | <#HIST: "H">
+ | <#YEST: "Y">
+ | <#FIN: "F">
+ | <#GLOB: "G">
+ | <#NEXT: "X">
+}
+
+TOKEN : {
+ <BINARYTEMP: <UNTIL> | <SINCE> | <UNLESS> >
+| <#UNTIL: "U">
+| <#SINCE: "S">
+| <#UNLESS: "W">
+}
+
+/* PRODUCTION RULES */
+
+// Root production
+SimpleNode Input() : {}
+{
+    ltl_expr() <EOF>
+    {return jjtThis;}
+}
+
+
+void ltl_expr() #void : {}
+{
+  ltl_equiv()
+}
+
+
+void ltl_equiv() #void :
+{ Token t; }
+{
+  ltl_impl() (t = <EQUIV> ltl_impl() { jjtThis.jjtSetValue(t.image); } #Equiv(2))*
+}
+
+
+void ltl_impl() #void :
+{ Token t; }
+{
+  ltl_or() (t = <IMPL> ltl_or() { jjtThis.jjtSetValue(t.image); } #Impl(2))*
+}
+
+
+void ltl_or() #void :
+{ Token t; }
+{
+  ltl_and() (t = <OR> ltl_and() { jjtThis.jjtSetValue(t.image); } #Or(2))*
+}
+
+
+void ltl_and() #void:
+{ Token t; }
+{
+  ltl_binary() (t = <AND> ltl_binary() { jjtThis.jjtSetValue(t.image); } #And(2))*
+}
+
+
+void ltl_binary() #void :
+{ Token t; }
+{
+  ltl_unary() (t = <BINARYTEMP> ltl_unary() { jjtThis.jjtSetValue(t.image); } #BinaryTemp(2))*
+}
+
+
+void ltl_unary() #void :
+{ Token t; }
+{
+  ltl_atom()
+  | t = <UNARY> ltl_unary() {jjtThis.jjtSetValue(t.image);}  #Unary(1)
+}
+
+
+void ltl_atom() #void :
+{ Token t; }
+{
+  t = <ATOM> { jjtThis.jjtSetValue(t.image); } #Atom
+  | <LPAREN> ltl_expr() <RPAREN>
+}
+

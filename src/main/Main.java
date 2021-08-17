@@ -1,35 +1,22 @@
 package main;
 
+import formula.Formula;
+import translator.Translator;
 import parser.ParseException;
 import parser.Parser;
-import parser.TokenList;
-import java.util.ArrayList;
-import converter.*;
+import parser.SimpleNode;
+
+import static converter.FormulaConverter.convert;
+
 
 public class Main {
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args) throws ParseException, IllegalArgumentException {
         System.out.println("Insert an LTL formula: ");
         Parser parser = new Parser(System.in);
-        TokenList tl = parser.Input();
-        ArrayList al = tl.toArrayList(); // returns an array list of token images
-        ArrayList alc = arrayListDeepCopy(al); // deep copy of the previous token images array list
-        Converter cnv = new Converter();
-        cnv.toBinaryForm(alc);
-        System.out.println("The formula was converted as below: ");
-        System.out.println(arrayListString(alc));
+        SimpleNode tree = parser.Input();
+        Formula phi = Translator.fromSimpleNodeToFormula(tree);
+        System.out.println("Before: " + phi.toString());
+        Formula phic = convert(phi);
+        System.out.println("After: " + phic.toString());
     }
-
-    /** ArrayList deep copy */
-    public static ArrayList<String> arrayListDeepCopy(ArrayList<String> al){
-        ArrayList alc = new ArrayList();
-        alc.addAll(al);
-        return alc;
-    }
-
-    public static String arrayListString(ArrayList<String> al){
-        String str = "";
-        for ( String a: al ) { str += " " + a; }
-        return str;
-    }
-
 }

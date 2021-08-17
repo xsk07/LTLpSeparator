@@ -128,12 +128,15 @@ public class Token implements java.io.Serializable {
     return newToken(ofKind, null);
   }
 
-  /**
-   * Returns a new token which is the deep copy of the token on which the method was called
-   */
+   /** Returns the deep copy of the token. */
   public Token deepCopy() {
-    return newToken(this.kind, this.image);
+    Token t = newToken(this.kind, this.image);
+    t.beginLine = this.beginLine;
+    t.beginColumn = this.beginColumn;
+    t.endLine = this.endLine;
+    t.endColumn = this.endColumn;
+    t.specialToken = this.specialToken;
+    return t;
   }
-
 }
 /* JavaCC - OriginalChecksum=2f0f1c81aefc18bc032a1604ab96d4a0 (do not edit this line) */
