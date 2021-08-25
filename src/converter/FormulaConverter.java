@@ -1,11 +1,8 @@
 package converter;
 
 import formula.*;
-
 import static formula.Operator.*;
 import static formula.AtomConstant.*;
-import static formula.TypeConstant.*;
-
 
 
 public class FormulaConverter {
@@ -16,7 +13,7 @@ public class FormulaConverter {
      * @return Returns a formula containing only boolean and the binary operators since
      * and until */
     public static Formula convert(Formula f) throws IllegalArgumentException {
-        if(f.type == OPERATOR){
+        if(f.isOperator()){
             OperatorFormula of = (OperatorFormula) f;
             if(of.isUnary()) {
                 ((UnaryFormula) f).setOperand(convert(((UnaryFormula) f).getOperand()));
@@ -27,7 +24,7 @@ public class FormulaConverter {
                 ((BinaryFormula) f).setRoperand(convert(((BinaryFormula) f).getRoperand()));
                 if(of.getOperator() == UNLESS) {
                     Formula opW = ruleW((BinaryFormula) f);
-                    return convert(opW); /* for the convertion of the G operator in the
+                    return convert(opW); /* for the conversion of the G operator in the
                     left branch of the formula */
                 }
                 return f;
@@ -76,8 +73,8 @@ public class FormulaConverter {
      *  @param f An UnaryFormula
      *  @return An equivalent formula without the Historically operator */
     public static Formula ruleH(UnaryFormula f) throws IllegalArgumentException {
-        if(f.getOperator() == HIST){
-            return universalRule(f, SINCE, TRUE);
+        if(f.getOperator() == HIST) {
+            return universalRule(f, SINCE);
         }
         throw new IllegalArgumentException(
                 String.format(
@@ -143,7 +140,7 @@ public class FormulaConverter {
      *  @return An equivalent formula without the Globally operator */
     public static Formula ruleG(UnaryFormula f) throws IllegalArgumentException {
         if(f.getOperator() == GLOB){
-            return universalRule(f, UNTIL, TRUE);
+            return universalRule(f, UNTIL);
         }
         throw new IllegalArgumentException(
                 String.format(
@@ -159,22 +156,16 @@ public class FormulaConverter {
      *  @return An equivalent formula without the Unless operator */
     public static Formula ruleW(BinaryFormula f) throws IllegalArgumentException {
         if(f.getOperator() == UNLESS) {
-            BinaryFormula orPhi = new BinaryFormula(OR);
-            BinaryFormula untilPhi = new BinaryFormula(UNTIL);
-            UnaryFormula globPhi = new UnaryFormula(GLOB);
-            Formula p = f.getLoperand();
-            Formula q = f.getRoperand();
-            Formula pCopy = p.deepCopy();
+            f.setOperator(UNTIL);
+            return new BinaryFormula(
+                    OR,
+                    f,
+                    new UnaryFormula(
+                            GLOB,
+                            f.getLoperand().deepCopy()
+                    )
+            );
 
-            untilPhi.setLoperand(p);
-            untilPhi.setRoperand(q);
-
-            globPhi.setOperand(pCopy);
-
-            orPhi.setLoperand(untilPhi);
-            orPhi.setRoperand(globPhi);
-
-            return orPhi;
         }
         throw new IllegalArgumentException(
                 String.format(
@@ -190,33 +181,28 @@ public class FormulaConverter {
      *  @see #ruleY(UnaryFormula)
      *  @see #ruleF(UnaryFormula)
      *  @see #ruleX(UnaryFormula) */
-    private static Formula existentialRule(UnaryFormula f, Operator bOp, AtomConstant tVal){
+    private static Formula existentialRule(UnaryFormula f, Operator bOp, AtomConstant tVal) {
 
-        BinaryFormula bopPhi = new BinaryFormula(bOp);
-        AtomicFormula tvalPhi = new AtomicFormula(tVal);
-        Formula qPhi = f.getOperand();
-        bopPhi.setLoperand(qPhi);
-        bopPhi.setRoperand(tvalPhi);
+        return new BinaryFormula(
+                bOp,
+                f.getOperand(),
+                new AtomicFormula(tVal)
+        );
 
-        return bopPhi;
     }
     /** A subroutine used by the methods: ruleH, ruleG.
      *  @see #ruleH(UnaryFormula)
      *  @see #ruleG(UnaryFormula) */
-    private static Formula universalRule(UnaryFormula f, Operator bOp, AtomConstant tVal){
+    private static Formula universalRule(UnaryFormula f, Operator bOp) {
 
-        UnaryFormula notPhi = new UnaryFormula(NOT);
-        BinaryFormula bopPhi = new BinaryFormula(bOp);
-        UnaryFormula notQ = new UnaryFormula(NOT);
-        AtomicFormula tvalPhi = new AtomicFormula(tVal);
-        Formula qPhi = f.getOperand();
+        return (
+                new BinaryFormula(
+                        bOp,
+                        new UnaryFormula(NOT, f.getOperand()),
+                        new AtomicFormula(TRUE)
+                )
+        ).negate();
 
-        notPhi.setOperand(bopPhi);
-        notQ.setOperand(qPhi);
-        bopPhi.setLoperand(notQ);
-        bopPhi.setRoperand(tvalPhi);
-
-        return notPhi;
     }
 
 }

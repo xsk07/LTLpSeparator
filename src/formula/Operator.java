@@ -21,11 +21,29 @@ public enum Operator {
     private final boolean temporal;
     private final int arity;
     private final String image;
+    private Operator mirrorOperator;
+
+    static {
+
+        UNTIL.mirrorOperator = SINCE;
+        SINCE.mirrorOperator = UNTIL;
+
+        ONCE.mirrorOperator = FIN;
+        FIN.mirrorOperator = ONCE;
+
+        HIST.mirrorOperator = GLOB;
+        GLOB.mirrorOperator = HIST;
+
+        YEST.mirrorOperator = NEXT;
+        NEXT.mirrorOperator = YEST;
+
+    }
 
     Operator(boolean temp, String img, int n) {
         this.temporal = temp;
         this.image = img;
         this.arity = n;
+        mirrorOperator = null;
     }
 
     /** @return Returns true if, and only if, represents a temporal operator */
@@ -37,6 +55,8 @@ public enum Operator {
     /** @return Returns the image of the operator */
     public String getImage() { return image; }
 
+    /** @return Returns the mirror operator */
+    public Operator getMirrorOperator() { return mirrorOperator; }
 
     /** @return Returns the OperatorConstant corresponding to the string in input
      * @param str A string image */

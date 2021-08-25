@@ -11,7 +11,7 @@ public enum AtomConstant {
         this.image = img;
     }
 
-    /** @return Returns the image */
+    /** @return Returns the image of the atom constant */
     public String getImage() { return this.image; }
 
 }

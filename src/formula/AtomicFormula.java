@@ -8,7 +8,7 @@ public class AtomicFormula extends Formula {
     private String image;
 
     /** Returns an AtomicFormula created from an AtomConstant.
-     * @see AtomConstant*/
+     * @see AtomConstant */
     public AtomicFormula(AtomConstant c) {
         super(ATOM);
         this.image = c.getImage();
@@ -29,7 +29,6 @@ public class AtomicFormula extends Formula {
     }
 
     @Override
-
     public String toString() { return this.getImage(); }
 
     /** @return Returns a deep copy of the formula */

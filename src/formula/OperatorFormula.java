@@ -2,14 +2,17 @@ package formula;
 
 import static formula.TypeConstant.*;
 
-public class OperatorFormula extends Formula {
+public abstract class OperatorFormula extends Formula {
 
-    Operator operator;
+    private Operator operator;
 
     public OperatorFormula(Operator op) {
         super(OPERATOR);
-        this.operator = op;
+        this.setOperator(op);
     }
+
+    /** @return Sets the operator of the formula */
+    public void setOperator(Operator op) { this.operator = op; }
 
     /** @return Returns the operator of the formula */
     public Operator getOperator(){
@@ -25,11 +28,6 @@ public class OperatorFormula extends Formula {
     /** @return Returns true if, and only if, the arity of the operator of the formula is 2 */
     public boolean isBinary() {
         return operator.getArity() == 2;
-    }
-
-    /** @return Returns a deep copy of the formula */
-    public OperatorFormula deepCopy(){
-        return new OperatorFormula(this.operator);
     }
 
 }

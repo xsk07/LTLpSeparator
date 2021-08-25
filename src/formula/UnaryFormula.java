@@ -6,11 +6,23 @@ package formula;
 public class UnaryFormula extends OperatorFormula {
     Formula operand;
 
+    /** Initializes a newly created UnaryFormula with operator op.
+     * @param op The unary operator of the formula */
     public UnaryFormula(Operator op) {
         super(op);
     }
 
-    /** @return Returns a formula which is the operand of the formula */
+    /** Initializes a newly created UnaryFormula with operator op and operand o.
+     * @param op The unary operator of the formula
+     * @param o  The operand of formula */
+    public UnaryFormula(Operator op, Formula o) {
+        super(op);
+        this.setOperand(o);
+    }
+
+
+    /** @return Returns a formula which is the operand of the operator of the formula
+     * on which the method was called */
     public Formula getOperand() {
         return operand;
     }
@@ -23,7 +35,7 @@ public class UnaryFormula extends OperatorFormula {
 
     @Override
     public String toString() {
-        String str = this.operator.getImage();
+        String str = this.getOperator().getImage();
         if(operand.isAtomic()) {
             AtomicFormula operandA = (AtomicFormula) operand;
             str += operandA.toString();
@@ -45,11 +57,12 @@ public class UnaryFormula extends OperatorFormula {
         return str;
     }
 
-    /** @return Returns a deep copy of the formula */
+    @Override
     public UnaryFormula deepCopy() {
-        UnaryFormula f = new UnaryFormula(this.operator);
-        f.operand = operand.deepCopy();
-        return f;
+        return new UnaryFormula(
+                this.getOperator(),
+                operand.deepCopy()
+        );
     }
 
 }

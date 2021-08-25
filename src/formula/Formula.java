@@ -1,13 +1,14 @@
 package formula;
 
+import static formula.Operator.*;
 import static formula.TypeConstant.*;
 
 
 /** The Formula class represents a generic LTL formula. */
-public class Formula {
+public abstract class Formula {
 
     /** The type of the formula */
-    public TypeConstant type;
+    private TypeConstant type;
 
     /** Initializes a newly created Formula with type t.
      * @param t type of the formula */
@@ -28,8 +29,11 @@ public class Formula {
     }
 
     /** @return Returns a deep copy of the formula */
-    public Formula deepCopy() {
-        return new Formula(this.getType());
+    public abstract Formula deepCopy();
+
+    /** @return Returns the negation of the formula on which the method was called */
+    public UnaryFormula negate() {
+        return new UnaryFormula(NOT,this);
     }
 
 }

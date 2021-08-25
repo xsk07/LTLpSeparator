@@ -5,8 +5,8 @@ import translator.Translator;
 import parser.ParseException;
 import parser.Parser;
 import parser.SimpleNode;
-
 import static converter.FormulaConverter.convert;
+import static separator.FormulaSeparator.separate;
 
 
 public class Main {
@@ -17,6 +17,8 @@ public class Main {
         Formula phi = Translator.fromSimpleNodeToFormula(tree);
         System.out.println("Before: " + phi.toString());
         Formula phic = convert(phi);
-        System.out.println("After: " + phic.toString());
+        Formula phis = separate(phic);
+        System.out.println("After: " + phis.toString());
+
     }
 }
