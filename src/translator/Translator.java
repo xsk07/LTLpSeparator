@@ -1,5 +1,6 @@
 package translator;
 import formula.*;
+import graphviz.GraphViz;
 import parser.SimpleNode;
 import static formula.Operator.*;
 
@@ -7,7 +8,7 @@ public class Translator {
 
     /** Translates an AST, consisting of the instances of the SimpleNode class,
      * into an equivalent instance of the Formula class.
-     * @param n A SimpleNode which is the root of the AST to translate
+     * @param n A SimpleNode which is the root of the AST to be translated
      * @return Returns a formula which is the translated form of the AST on which the method was called
      * @see parser.Node
      * @see parser.SimpleNode
@@ -63,6 +64,48 @@ public class Translator {
         f.setLoperand(lOp); // set the left child
         f.setRoperand(rOp); // set the right child
         return f;
+    }
+
+
+    /** Translates a formula into an object of the GraphViz class.
+     * @param f The formula to be translated
+     * @return Returns the GraphViz representation of the formula f
+     * @see formula.Formula
+     * @see graphviz.GraphViz
+     * */
+    public static GraphViz fromFormulaToGraphViz(Formula f){
+        GraphViz gv = new GraphViz();
+        gv.addln(gv.start_graph());
+        if(f.isAtomic()) {
+            gv.addln(f.getImage() + ";");
+        }
+        if(f.isOperator()){
+            addLine(gv, (OperatorFormula) f);
+        }
+        gv.addln(gv.end_graph());
+        return gv;
+    }
+
+    /** A fromFormulaToGraphViz subroutine.*/
+    private static void addLine(GraphViz gv, OperatorFormula f){
+        if(f.isUnary()) {
+            Formula c = ((UnaryFormula) f).getOperand();
+            gv.addln(f.hashCode() + " [label=\"" + f.getImage() + "\"]" + ";");
+            gv.addln(c.hashCode() + " [label=\"" + c.getImage() + "\"]" + ";");
+            gv.addln(f.hashCode() + "->" + c.hashCode() + ";");
+            if(c.isOperator()) addLine(gv, (OperatorFormula) c);
+        }
+        if(f.isBinary()) {
+            Formula lc = ((BinaryFormula) f).getLoperand();
+            Formula rc = ((BinaryFormula) f).getRoperand();
+            gv.addln(f.hashCode() + " [label=\"" + f.getImage() + "\"]" + ";");
+            gv.addln(lc.hashCode() + " [label=\"" + lc.getImage() + "\"]" + ";");
+            gv.addln(rc.hashCode() + " [label=\"" + rc.getImage() + "\"]" + ";");
+            gv.addln(f.hashCode() + "->" + lc.hashCode() + ";");
+            if(lc.isOperator()) addLine(gv, (OperatorFormula) lc);
+            gv.addln(f.hashCode() + "->" + rc.hashCode() + ";");
+            if(rc.isOperator()) addLine(gv, (OperatorFormula) rc);
+        }
     }
 
 }

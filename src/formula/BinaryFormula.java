@@ -89,4 +89,28 @@ public class BinaryFormula extends OperatorFormula {
         );
     }
 
+    /** Swaps the two operands of the formula. */
+    public void swapChildren(){
+        Formula temp = this.loperand;
+        this.loperand = this.roperand;
+        this.roperand = temp;
+    }
+
+
+    @Override
+    public boolean equals(Formula f) {
+        if(f.isOperator()) {
+            OperatorFormula of = (OperatorFormula) f;
+            if(of.isBinary()){
+                BinaryFormula bf = (BinaryFormula) of;
+                return (
+                        (bf.getOperator() == this.getOperator())
+                                && (bf.getLoperand().equals(this.getLoperand()))
+                                && (bf.getRoperand().equals(this.getRoperand()))
+                );
+            }
+        }
+        return false;
+    }
+
 }

@@ -34,4 +34,10 @@ public class AtomicFormula extends Formula {
     /** @return Returns a deep copy of the formula */
     public AtomicFormula deepCopy() { return new AtomicFormula(this.getImage()); }
 
+
+    @Override
+    public boolean equals(Formula f) {
+        return (f.isAtomic() && (this.getImage() == f.getImage()));
+    }
+
 }

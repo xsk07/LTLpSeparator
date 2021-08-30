@@ -1,5 +1,7 @@
 package formula;
 
+import java.util.Objects;
+
 /** The UnaryFormula class represents an LTL formula which the top operator is of arity one (unary).
  * Each UnaryFormula has a tree structure.
  * The only one child represents the operand in the scope of the top operator. */
@@ -64,5 +66,21 @@ public class UnaryFormula extends OperatorFormula {
                 operand.deepCopy()
         );
     }
+
+    @Override
+    public boolean equals(Formula f) {
+        if(f.isOperator()) {
+            OperatorFormula of = (OperatorFormula) f;
+            if(of.isUnary()){
+                UnaryFormula uf = (UnaryFormula) of;
+                return (
+                        (uf.getOperator() == this.getOperator())
+                        && (uf.getOperand().equals(this.getOperand()))
+                        );
+            }
+        }
+        return false;
+    }
+
 
 }

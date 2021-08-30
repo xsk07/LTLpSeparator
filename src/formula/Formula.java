@@ -1,5 +1,7 @@
 package formula;
 
+import graphviz.GraphViz;
+
 import static formula.Operator.*;
 import static formula.TypeConstant.*;
 
@@ -36,4 +38,7 @@ public abstract class Formula {
         return new UnaryFormula(NOT,this);
     }
 
+    public abstract String getImage();
+
+    public abstract boolean equals(Formula f);
 }

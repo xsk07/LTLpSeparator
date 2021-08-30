@@ -1,12 +1,15 @@
 package main;
 
 import formula.Formula;
+import graphviz.GraphViz;
 import translator.Translator;
 import parser.ParseException;
 import parser.Parser;
 import parser.SimpleNode;
+import java.io.File;
 import static converter.FormulaConverter.convert;
 import static separator.FormulaSeparator.separate;
+import static translator.Translator.fromFormulaToGraphViz;
 
 
 public class Main {
@@ -19,6 +22,21 @@ public class Main {
         Formula phic = convert(phi);
         Formula phis = separate(phic);
         System.out.println("After: " + phis.toString());
+        GraphViz gv = fromFormulaToGraphViz(phis);
+
+        // begin GraphVizAPI instructions
+        gv.increaseDpi();   // 106 dpi
+        String type = "gif";
+        String repesentationType= "dot";
+        File out = new File("PATH/out." + type);
+        gv.writeGraphToFile( gv.getGraph(gv.getDotSource(), type, repesentationType), out );
+        // end GraphVizAPI instructions
+
 
     }
+
+
+
+
+
 }

@@ -19,7 +19,6 @@ public abstract class OperatorFormula extends Formula {
         return operator;
     }
 
-
     /** @return Returns true if, and only if, the arity of the operator of the formula is 1 */
     public boolean isUnary() {
         return operator.getArity() == 1;
@@ -29,5 +28,8 @@ public abstract class OperatorFormula extends Formula {
     public boolean isBinary() {
         return operator.getArity() == 2;
     }
+
+    /** @return Returns the image of the top operator of the formula */
+    public String getImage(){ return this.operator.getImage(); }
 
 }
