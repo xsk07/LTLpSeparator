@@ -1,4 +1,4 @@
-package com.github.jabbalaci.graphviz;
+package graphviz;
 
 // GraphViz.java - a simple API to call dot from Java programs
 
@@ -208,7 +208,7 @@ public class GraphViz
      * 	<li>twopi</li>
      * 	<li>circo</li>
      * </ul>
-     * @see http://www.graphviz.org under the Roadmap title
+     * @see <a href="http://www.graphviz.org">under the Roadmap title</a>
      * @return A byte array containing the image of the graph.
      */
     public byte[] getGraph(String dot_source, String type, String representationType)
@@ -272,7 +272,7 @@ public class GraphViz
      * 	<li>twopi</li>
      * 	<li>circo</li>
      * </ul>
-     * @see http://www.graphviz.org under the Roadmap title
+     * @see <a href="http://www.graphviz.org">under the Roadmap title</a>
      * @return The image of the graph in .gif format.
      */
     private byte[] get_img_stream(File dot, String type, String representationType)

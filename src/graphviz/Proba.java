@@ -1,4 +1,4 @@
-package com.github.jabbalaci.graphviz;
+package graphviz;
 
 import java.io.File;
 
