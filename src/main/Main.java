@@ -21,7 +21,7 @@ public class Main {
         System.out.println("Before: " + phi.toString());
         Formula phic = convert(phi);
         Formula phie = eliminate(phic);
-        System.out.println("After: " + phis.toString());
+        System.out.println("After: " + phie.toString());
         GraphViz gv = fromFormulaToGraphViz(phie);
 
         // begin GraphVizAPI instructions
