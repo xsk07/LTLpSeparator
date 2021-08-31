@@ -14,8 +14,6 @@ public class FormulaSeparator {
         while (!before.equals(after)){
             before = after;
             after = separate(after);
-            System.out.println("prima: " + before);
-            System.out.println("dopo: " + after);
         }
         return after;
     }
@@ -90,7 +88,7 @@ public class FormulaSeparator {
                         }
                         default -> {
                             separateOperands(bf);
-                            if(nestingCase(bf) != 0) return separate(bf);
+                            // if(nestingCase(bf) != 0) return separate(bf);
                             return bf;
                         }
                     }
