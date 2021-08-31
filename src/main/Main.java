@@ -20,9 +20,9 @@ public class Main {
         Formula phi = Translator.fromSimpleNodeToFormula(tree);
         System.out.println("Before: " + phi.toString());
         Formula phic = convert(phi);
-        Formula phis = separate(phic);
+        Formula phie = eliminate(phic);
         System.out.println("After: " + phis.toString());
-        GraphViz gv = fromFormulaToGraphViz(phis);
+        GraphViz gv = fromFormulaToGraphViz(phie);
 
         // begin GraphVizAPI instructions
         gv.increaseDpi();   // 106 dpi
