@@ -1,7 +1,9 @@
 package separator;
 
 import formula.*;
+
 import java.util.ArrayList;
+
 import static formula.Operator.*;
 import static separator.EliminationRules.*;
 
@@ -10,10 +12,10 @@ public class FormulaSeparator {
     public static Formula eliminate(Formula f){
 
         Formula before = f;
-        Formula after = separate(f);
+        Formula after = applyEliminations(f);
         while (!before.equals(after)){
             before = after;
-            after = separate(after);
+            after = applyEliminations(after);
         }
         return after;
     }
@@ -21,10 +23,10 @@ public class FormulaSeparator {
 
     /** Separates a formula into a conjunction of pure past, pure present and pure future formulas,
      *  applying the elimination rules of the Gabbay' Separation Theorem.
-     *  @param f The formula to separate
+     *  @param f The formula to applyEliminations
      *  @return Returns the separated formula
      **/
-    public static Formula separate(Formula f) {
+    public static Formula applyEliminations(Formula f) {
         if(f.isOperator()){
             OperatorFormula of = (OperatorFormula) f;
             if(of.isBinary()){
@@ -62,33 +64,29 @@ public class FormulaSeparator {
                             separateOperands(bf);
                             sfms = subformulas57(bf);
                             System.out.println("Elimination5");
-
                             return elimination5(sfms, op_f);
                         }
                         case 6 -> {
                             separateOperands(bf);
                             sfms = subformulas6(bf);
                             System.out.println("Elimination6");
-
                             return elimination6(sfms, op_f);
                         }
                         case 7 -> {
                             separateOperands(bf);
                             sfms = subformulas57(bf);
                             System.out.println("Elimination7");
-
                             return elimination7(sfms, op_f);
                         }
                         case 8 -> {
                             separateOperands(bf);
                             sfms = subformulas8(bf);
                             System.out.println("Elimination8");
-
                             return elimination8(sfms, op_f);
                         }
                         default -> {
                             separateOperands(bf);
-                            // if(nestingCase(bf) != 0) return separate(bf);
+                            //if(nestingCase(bf) != 0) return applyEliminations(bf);
                             return bf;
                         }
                     }
@@ -112,13 +110,13 @@ public class FormulaSeparator {
     public static void separateOperands(BinaryFormula f){
         Formula lc = f.getLoperand();
         Formula rc = f.getRoperand();
-        f.setLoperand(separate(lc));
-        f.setRoperand(separate(rc));
+        f.setLoperand(applyEliminations(lc));
+        f.setRoperand(applyEliminations(rc));
     }
     /** Separates the operand of the formula.
      * @param f The unary formula on which will be applied the separation on its the operand */
     public static void separateOperand(UnaryFormula f){
-        f.setOperand(separate(f.getOperand()));
+        f.setOperand(applyEliminations(f.getOperand()));
     }
 
     /** @return Returns the number of the nesting case of the formula.
@@ -199,8 +197,18 @@ public class FormulaSeparator {
                 Formula lcAND = andX.getLoperand();
                 if(lcAND.isOperator()){
                     OperatorFormula ofLcAND = (OperatorFormula) lcAND;
-                    if(ofLcAND.getOperator() == fOp.getMirrorOperator() || ofLcAND.getOperator() == NOT) {
+                    if(ofLcAND.getOperator() == fOp.getMirrorOperator()) {
                         andX.swapChildren();
+                    }
+                    else if (ofLcAND.getOperator() == NOT){
+                        UnaryFormula uOfLcAND = (UnaryFormula) ofLcAND;
+                        Formula uOfLcAndOperand = uOfLcAND.getOperand();
+                        if(uOfLcAndOperand.isOperator()) {
+                            OperatorFormula OpUOfLcAndOperand = (OperatorFormula) uOfLcAndOperand;
+                            if(OpUOfLcAndOperand.getOperator() == fOp.getMirrorOperator()){
+                                andX.swapChildren();
+                            }
+                        }
                     }
                 }
 
@@ -243,13 +251,24 @@ public class FormulaSeparator {
             if(ofX.getOperator() == OR) {
                 BinaryFormula orX = (BinaryFormula) ofX;
 
-
-                Formula ly = orX.getLoperand();
-                if(ly.isOperator()){
-                    OperatorFormula oflY = (OperatorFormula) ly;
-                    if(oflY.isOperator()){
-                        if(oflY.getOperator() == fOp.getMirrorOperator() || oflY.getOperator() == NOT) {
-                            orX.swapChildren();
+                /* since the OR is a commutative operator it's possible to have the reversed
+                situation where the binary temporal operator is on the left rather than on the
+                right. For simplicity in this situation the two operands will be swapped and
+                led the two situations to a unique case. */
+                Formula lcOR = orX.getLoperand();
+                if(lcOR.isOperator()){
+                    OperatorFormula ofLcOR = (OperatorFormula) lcOR;
+                    if(ofLcOR.getOperator() == fOp.getMirrorOperator()) {
+                        orX.swapChildren();
+                    }
+                    else if (ofLcOR.getOperator() == NOT){
+                        UnaryFormula uOfLcOR = (UnaryFormula) ofLcOR;
+                        Formula uOfLcOrOperand = uOfLcOR.getOperand();
+                        if(uOfLcOrOperand.isOperator()) {
+                            OperatorFormula OpUOfLcOrOperand = (OperatorFormula) uOfLcOrOperand;
+                            if(OpUOfLcOrOperand.getOperator() == fOp.getMirrorOperator()){
+                                orX.swapChildren();
+                            }
                         }
                     }
                 }
