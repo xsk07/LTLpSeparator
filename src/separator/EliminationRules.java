@@ -2,7 +2,6 @@ package separator;
 
 import formula.*;
 import java.util.ArrayList;
-
 import static converter.FormulaConverter.convert;
 import static formula.AtomConstant.*;
 import static formula.Operator.*;
@@ -55,13 +54,13 @@ public abstract class EliminationRules {
 
     }
 
-    /** E2 = A&(aS(B&q)) */
+    /** E2 = A&(aS(q&B)) */
     public static BinaryFormula e1_E2(ArrayList<Formula> fms, Operator op){
 
         return new BinaryFormula(
                 AND,
                 fms.get(1).deepCopy(), // A
-                subformulaPattern14(fms, op) // aS(B&q)
+                subformulaPattern14(fms, op) // aS(q&B)
         );
 
     }
@@ -248,10 +247,13 @@ public abstract class EliminationRules {
                         fms.get(0).deepCopy().negate() // !a
                 ).negate(),
                 // Oa
-                convert(new UnaryFormula (
-                        ONCE,
-                        fms.get(0).deepCopy() // a
-                ))
+                convert(
+                        new UnaryFormula (
+                                ONCE,
+                                fms.get(0).deepCopy(), // a
+                                null
+                        )
+                )
         );
 
     }
@@ -370,7 +372,7 @@ public abstract class EliminationRules {
     /** ELIMINATION 6
      *  (a&!(AUB)) S (q|(AUB)) =>* E = E1 | E2 | E3, where:
      *      E1 = (a S (!A & q)) & !A & !B
-     *      E2 = (!A & !B & (q|(AUB)) & (aS(!A&q))) S (q|(AUB))
+     *      E2 =
      *      E3 = (a S (q & !A)) & !A & !(AUB)
      * @param fms The subformulas needed for the elimination.
      * Where: fms[0] == a, fms[1] == A, fms[2] == B, fms[3] == q
@@ -380,7 +382,7 @@ public abstract class EliminationRules {
         return ternaryDisjunction(
                 e6_E1(fms, op), // (a S (!A & q)) & !A & !B
                 // E2 = e6_E2(fms) needs further separation using the elimination5
-                e6_E2(fms, op), // ((!A & !B) & (q|(AUB)) & (aS(q&!A))) S (q|(AUB))
+                e6_E2(fms, op),
                 e6_E3(fms, op) // ((aS(q&!A)) & !A) & !(AUB)
         );
 
@@ -397,32 +399,36 @@ public abstract class EliminationRules {
 
     }
 
-
-    /** E2 = (!A & !B & (q|(AUB)) & (aS(!A&q))) S (q|(AUB)) */
     public static BinaryFormula e6_E2(ArrayList<Formula> fms, Operator op){
 
-        // (!A & !B) & (q|(AUB))
-        BinaryFormula and1 = new BinaryFormula(
-                AND,
-                subformulaPattern9(fms), // !A & !B
-                subformulaPattern12(fms, op) // q|(AUB)
-        );
-
-        // (!A & !B) & (q|(AUB)) & (aS(q&!A))
-        BinaryFormula and3 = new BinaryFormula(
-                AND,
-                and1, // (!A & !B) & (q|(AUB))
-                subformulaPattern8(fms, op) // aS(q&!A)
-
-        );
-
-        // ((!A & !B) & (q|(AUB)) & (aS(q&!A))) S (q|(AUB))
+        /* (((!A & !B & (a S (q & !A))) | q) S (q | (AUB)))
+         | ((!A & !B & (a S (q & !A)) & (AUB)) S (q | (AUB))) */
         return new BinaryFormula(
-                op, // S
-                and3, // (!A & !B) & (q|(AUB)) & (aS(q&!A))
-                subformulaPattern12(fms, op) // q|(AUB)
+                OR,
+                // ((!A & !B & (a S (q & !A))) | q) S (q | (AUB))
+                new BinaryFormula(
+                        op, // S
+                        // (!A & !B & (a S (q & !A))) | q
+                        new BinaryFormula(
+                                OR,
+                                subformulaPattern19(fms, op), // !A & !B & (a S (q & !A))
+                                fms.get(3).deepCopy() // q
+                        ),
+                        //
+                        subformulaPattern12(fms, op) // q | (AUB)
+                ),
+                // (!A & !B & (a S (q & !A)) & (AUB)) S (q | (AUB))
+                new BinaryFormula(
+                        op,
+                        // !A & !B & (a S (q & !A)) & (AUB)
+                        new BinaryFormula(
+                                AND,
+                                subformulaPattern19(fms, op), // !A & !B & (a S (q & !A))
+                                subformulaPattern3(fms, op) // AUB
+                        ),
+                        subformulaPattern12(fms, op) // q | (AUB)
+                )
         );
-
     }
 
 
@@ -518,7 +524,7 @@ public abstract class EliminationRules {
 
     /** ELIMINATION 8
      *   (a&!(AUB)) S (q|!(AUB)) =>* E = E1 | E2 | E3, where:
-     *      E1 = H(!a|(AUB))
+     *      E1 = !( !(!a|(AUB)) S true)
      *      E2 = (!q & (AUB) & !a) S (!a|(AUB))
      *      E3 = (!q&(AUB)) S (!a|(AUB))
      * @param fms The subformulas needed for the elimination.
@@ -526,16 +532,17 @@ public abstract class EliminationRules {
      */
 
     public static BinaryFormula elimination8(ArrayList<Formula> fms, Operator op) {
+        return new BinaryFormula(
+                OR,
+                convert(e8_E1(fms, op)), // !( !(!a|(AUB)) S true)
+                new BinaryFormula(
+                        OR,
+                        // E2 needs further separation using the elimination5!
+                        e8_E2(fms, op), // ((!q & (AUB)) & !a) S (!a|(AUB))
+                        // E3 needs further separation using the elimination5!
+                        e8_E3(fms, op) // (!q&(AUB)) S (!a|(AUB))
 
-        return  ternaryDisjunction(
-
-                // E1 needs application of ruleH!
-                e8_E1(fms, op), // H(!a|(AUB))
-                // E2 needs further separation using the elimination5!
-                e8_E2(fms, op), // ((!q & (AUB)) & !a) S (!a|(AUB))
-                // E3 needs further separation using the elimination5!
-                e8_E3(fms, op) // (!q&(AUB)) S (!a|(AUB))
-
+                )
         );
 
     }
@@ -544,10 +551,11 @@ public abstract class EliminationRules {
     public static UnaryFormula e8_E1(ArrayList<Formula> fms, Operator op) {
 
         // H(!a|(AUB))
-        return (UnaryFormula) convert(new UnaryFormula(
+        return new UnaryFormula(
                 HIST,
-                subformulaPattern15(fms, op) // !a|(AUB)
-        ));
+                (Formula) subformulaPattern15(fms, op), // !a|(AUB)
+                null
+        );
 
     }
 
@@ -628,6 +636,27 @@ public abstract class EliminationRules {
                 new BinaryFormula(OR, f1, f2),
                 f3
         );
+    }
+
+
+    /** @return Returns a new BinaryFormula which is the disjunction of the formulas got in input
+     * @param fms the formulas that will be the operands of the disjunction
+     **/
+    public static BinaryFormula ennaryDisjunction(ArrayList<Formula> fms) {
+        if(fms.size() < 2) throw new IllegalArgumentException(
+                String.format("The list of formulas should have size at least two to be possible to create a new disjunction formula")
+        );
+        Formula first = fms.get(0);
+        BinaryFormula result = null;
+        for (int i = 1; i < fms.size(); i++) {
+            result = new BinaryFormula(
+                    OR,
+                    first.deepCopy(),
+                    fms.get(i)
+            );
+            first = result;
+        }
+        return result;
     }
 
 }

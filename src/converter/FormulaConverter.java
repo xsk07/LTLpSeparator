@@ -16,20 +16,20 @@ public class FormulaConverter {
         if(f.isOperator()){
             OperatorFormula of = (OperatorFormula) f;
             if(of.isUnary()) {
-                ((UnaryFormula) f).setOperand(convert(((UnaryFormula) f).getOperand()));
-                return applyUnaryRule((UnaryFormula) f);
+                UnaryFormula uf = (UnaryFormula) f;
+                uf.setOperand(convert(uf.getOperand()));
+                return applyUnaryRule(uf);
             }
             if(of.isBinary()){
-                ((BinaryFormula) f).setLoperand(convert(((BinaryFormula) f).getLoperand()));
-                ((BinaryFormula) f).setRoperand(convert(((BinaryFormula) f).getRoperand()));
+                BinaryFormula bf = (BinaryFormula) f;
+                bf.setLoperand(convert(bf.getLoperand()));
+                bf.setRoperand(convert(bf.getRoperand()));
                 if(of.getOperator() == UNLESS) {
-                    Formula opW = ruleW((BinaryFormula) f);
+                    Formula opW = ruleW(bf);
                     return convert(opW); /* for the conversion of the G operator in the
                     left branch of the formula */
                 }
-                return f;
             }
-            return f;
         }
         return f;
     }
@@ -162,7 +162,8 @@ public class FormulaConverter {
                     f,
                     new UnaryFormula(
                             GLOB,
-                            f.getLoperand().deepCopy()
+                            f.getLoperand().deepCopy(),
+                            null
                     )
             );
 
@@ -198,7 +199,7 @@ public class FormulaConverter {
         return (
                 new BinaryFormula(
                         bOp,
-                        new UnaryFormula(NOT, f.getOperand()),
+                        f.getOperand().negate(),
                         new AtomicFormula(TRUE)
                 )
         ).negate();

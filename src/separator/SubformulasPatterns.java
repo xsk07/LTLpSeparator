@@ -220,20 +220,20 @@ public abstract class SubformulasPatterns {
 
     }
 
-    /** @return Returns a new instantiated formula of the form: aS(B&q)
+    /** @return Returns a new instantiated formula of the form: aS(q&B)
      * @param fms the ArrayList of the subformulas needed by the elimination rules.
      * fms[0] = a, fms[1] = A, fms[2] = B, fms[3] = q */
     public static BinaryFormula subformulaPattern14(ArrayList<Formula> fms, Operator op){
 
-        // a S (B & q)
+        // a S (q & B)
         return new BinaryFormula(
                 op, // S
                 fms.get(0).deepCopy(), // a
-                // B & q
+                // q & B
                 new BinaryFormula(
                         AND,
-                        fms.get(2).deepCopy(),// B
-                        fms.get(3).deepCopy() // q
+                        fms.get(3).deepCopy(), // q
+                        fms.get(2).deepCopy()// B
                 )
         );
 
@@ -266,16 +266,16 @@ public abstract class SubformulasPatterns {
         );
     }
 
-    /** @return Returns a new instantiated formula of the form: !q & (AUB) & !a
+    /** @return Returns a new instantiated formula of the form: !a & !q & (AUB)
      * @param fms the ArrayList of the subformulas needed by the elimination rules.
      * fms[0] = a, fms[1] = A, fms[2] = B, fms[3] = q */
     public static BinaryFormula subformulaPattern17(ArrayList<Formula> fms, Operator op){
 
-        // (!q&(AUB)) & !a
+        //  !a & (!q&(AUB))
         return new BinaryFormula(
                 AND,
-                subformulaPattern16(fms, op), // !q&(AUB)
-                fms.get(0).deepCopy().negate() // !a
+                fms.get(0).deepCopy().negate(), // !a
+                subformulaPattern16(fms, op) // !q&(AUB)
         );
 
     }
@@ -295,6 +295,20 @@ public abstract class SubformulasPatterns {
                         fms.get(0).deepCopy().negate(), // !a
                         fms.get(2).deepCopy() // B
                 )
+        );
+
+    }
+
+    /** @return Returns a new instantiated formula of the form: !A & !B & (a S (q & !A))
+     * @param fms the ArrayList of the subformulas needed by the elimination rules.
+     * fms[0] = a, fms[1] = A, fms[2] = B, fms[3] = q */
+    public static BinaryFormula subformulaPattern19(ArrayList<Formula> fms, Operator op){
+
+        // !A & !B & (a S (q & !A))
+        return new BinaryFormula(
+                AND,
+                subformulaPattern9(fms), // !A & !B
+                subformulaPattern8(fms, op) // a S (q & !A)
         );
 
     }

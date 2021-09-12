@@ -17,12 +17,11 @@ public class Translator {
         int nId = n.getId();
         switch(nId){
             case 0: { //INPUT
-                SimpleNode c = (SimpleNode) n.jjtGetChild(0); // child node of n
                 /* Jump the Input node and return, as the root of the formula, the
-                formula translation of its child */
-                return fromSimpleNodeToFormula(c);
+                formula translation of its unique child */
+                return fromSimpleNodeToFormula((SimpleNode) n.jjtGetChild(0));
             }
-            /* ALL BINARY */
+            // ALL BINARY
             case 2:
             case 3:
             case 4:
@@ -30,7 +29,7 @@ public class Translator {
             case 6: return translateBinaryNode(n);
             case 7: { //UNARY
                 SimpleNode c = (SimpleNode) n.jjtGetChild(0);
-                String img = (String) n.jjtGetValue();
+                String img = n.jjtGetValue();
                 UnaryFormula f = new UnaryFormula(fromString(img));
                 Formula uOp = fromSimpleNodeToFormula(c);
                 f.setOperand(uOp);
@@ -38,8 +37,7 @@ public class Translator {
             }
             case 8: { //ATOM
                 /* return an atomic formula with the same image of the node n */
-                String img = (String) n.jjtGetValue(); // node image
-                return new AtomicFormula(img);
+                return new AtomicFormula(n.jjtGetValue());
             }
             default: throw new IllegalArgumentException(
                     String.format("The node should have an id value between 0 and 8, but it has %s", nId)

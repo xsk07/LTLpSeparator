@@ -1,7 +1,5 @@
 package formula;
 
-import java.util.Objects;
-
 /** The UnaryFormula class represents an LTL formula which the top operator is of arity one (unary).
  * Each UnaryFormula has a tree structure.
  * The only one child represents the operand in the scope of the top operator. */
@@ -14,25 +12,30 @@ public class UnaryFormula extends OperatorFormula {
         super(op);
     }
 
+    /** Initializes a newly created UnaryFormula with operator op.
+     * @param op The unary operator of the formula */
+    public UnaryFormula(Operator op, OperatorFormula p) {
+        super(op, p);
+    }
+
     /** Initializes a newly created UnaryFormula with operator op and operand o.
      * @param op The unary operator of the formula
      * @param o  The operand of formula */
-    public UnaryFormula(Operator op, Formula o) {
-        super(op);
+    public UnaryFormula(Operator op, Formula o, OperatorFormula p) {
+        super(op, p);
         this.setOperand(o);
     }
 
 
     /** @return Returns a formula which is the operand of the operator of the formula
      * on which the method was called */
-    public Formula getOperand() {
-        return operand;
-    }
+    public Formula getOperand() { return operand; }
 
     /** Sets the operand of the formula.
-     * @param op The formula to be set as the operand */
-    public void setOperand(Formula op) {
-        this.operand = op;
+     * @param o The formula to be set as the operand */
+    public void setOperand(Formula o) {
+        this.operand = o;
+        o.setParent(this);
     }
 
     @Override
@@ -51,7 +54,7 @@ public class UnaryFormula extends OperatorFormula {
                 }
                 if(operandF.isBinary()) {
                     BinaryFormula operandB = (BinaryFormula) operandF;
-                    str += "(" + operandB.toString() + ")";
+                    str += "(" + operandB + ")";
                 }
             }
             else str += "(" + operand.toString() + ")";
@@ -63,7 +66,8 @@ public class UnaryFormula extends OperatorFormula {
     public UnaryFormula deepCopy() {
         return new UnaryFormula(
                 this.getOperator(),
-                operand.deepCopy()
+                this.operand.deepCopy(),
+                null
         );
     }
 
@@ -74,7 +78,7 @@ public class UnaryFormula extends OperatorFormula {
             if(of.isUnary()){
                 UnaryFormula uf = (UnaryFormula) of;
                 return (
-                        (uf.getOperator() == this.getOperator())
+                        (uf.getOperator().equals(this.getOperator()))
                         && (uf.getOperand().equals(this.getOperand()))
                         );
             }

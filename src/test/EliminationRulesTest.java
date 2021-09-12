@@ -9,7 +9,7 @@ import parser.Parser;
 import parser.SimpleNode;
 import java.io.ByteArrayInputStream;
 import static org.junit.jupiter.api.Assertions.*;
-import static separator.FormulaSeparator.separate;
+import static separator.FormulaSeparator.applyEliminations;
 import static translator.Translator.fromSimpleNodeToFormula;
 
 
@@ -52,14 +52,14 @@ class EliminationRulesTest {
     void elimination4_1() throws ParseException, IllegalArgumentException {
         separationTest(
                 "aS(q|!(bUc))",
-                "!((!q&(bUc)&!a)S!a)&Oa"
+                "!((!q&(bUc)&!a)S!a)&(aStrue)"
 
         );
     }
 
 
-    @Test
-    @DisplayName("Elimination4.V2")
+    //@Test
+    //@DisplayName("Elimination4.V2")
     void elimination4_2() throws ParseException, IllegalArgumentException {
         separationTest(
                 "aS(q|!(bUc))",
@@ -97,7 +97,7 @@ class EliminationRulesTest {
     @DisplayName("Elimination7")
     void elimination7() throws ParseException, IllegalArgumentException {
         separationTest(
-                "(a&(bUc))S(q|!(bUc)) ",
+                "(a&(bUc))S(q|!(bUc))",
                 "((b&(q|!(bUc))&(aS(c&q)))S(q|!(bUc)))" +
                         "|((aS(c&q))&b)" + "|((aS(c&q))&c&(bUc))"
         );
@@ -109,7 +109,7 @@ class EliminationRulesTest {
     void elimination8() throws ParseException, IllegalArgumentException {
         separationTest(
                 "(a&!(bUc))S(q|!(bUc))",
-                "H(!a|(bUc))"+"|((!q&(bUc)&!a)S(!a|(bUc)))"+
+                "!(!(!a|(bUc))Strue)"+"|((!q&(bUc)&!a)S(!a|(bUc)))"+
                         "|((!q&(bUc))S(!a|(bUc)))"
         );
 
@@ -123,7 +123,7 @@ class EliminationRulesTest {
         Parser parser = new Parser(System.in);
         SimpleNode tree = parser.Input();
         BinaryFormula treeFormula = (BinaryFormula) fromSimpleNodeToFormula(tree);
-        Formula separatedFormula = separate(treeFormula);
+        Formula separatedFormula = applyEliminations(treeFormula);
         assertEquals(expectedFormula, separatedFormula.toString());
     }
 

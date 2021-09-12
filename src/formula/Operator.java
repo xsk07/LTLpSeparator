@@ -25,6 +25,9 @@ public enum Operator {
 
     static {
 
+        AND.mirrorOperator = OR;
+        OR.mirrorOperator = AND;
+
         UNTIL.mirrorOperator = SINCE;
         SINCE.mirrorOperator = UNTIL;
 
@@ -55,8 +58,19 @@ public enum Operator {
     /** @return Returns the image of the operator */
     public String getImage() { return image; }
 
+    /** @return Returns true if, and only if, has a mirror operator */
+    public boolean hasMirrorOperator(){
+        return mirrorOperator != null;
+    }
+
     /** @return Returns the mirror operator */
-    public Operator getMirrorOperator() { return mirrorOperator; }
+    public Operator getMirrorOperator() {
+        if(hasMirrorOperator()) return mirrorOperator;
+        else return null; // should throw an exception !!!
+    }
+
+    @Override
+    public String toString(){return image;}
 
     /** @return Returns the OperatorConstant corresponding to the string in input
      * @param str A string image */
@@ -66,6 +80,5 @@ public enum Operator {
         }
         return null;
     }
-
 
 }

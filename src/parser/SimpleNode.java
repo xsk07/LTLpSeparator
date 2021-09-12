@@ -51,7 +51,7 @@ class SimpleNode implements Node {
 
   public void jjtSetValue(String value) { this.value = value; }
 
-  public Object jjtGetValue() { return value; }
+  public String jjtGetValue() { return value; }
 
   /* You can override these two methods in subclasses of SimpleNode to
      customize the way the node appears when the tree is dumped.  If
@@ -62,7 +62,7 @@ class SimpleNode implements Node {
   public String toString() {
     return ParserTreeConstants.jjtNodeName[id];
   }
-  public String toString(String prefix) { return prefix + toString(); }
+  public String toString(String prefix) { return prefix; }
 
   /* Override this method if you want to customize how the node dumps
      out its children. */
