@@ -2,10 +2,11 @@ package separator;
 
 import formula.*;
 import java.util.ArrayList;
-import static formula.BooleanRules.distributionRule;
+import static formula.BooleanRules.*;
 import static formula.Operator.*;
 import static separator.EliminationRules.*;
-import static formula.BooleanRules.deMorganLaw;
+import static separator.Lemmas.needsLemmaA2;
+import static separator.OperatorChain.*;
 import static separator.Lemmas.lemmaA2;
 
 public class FormulaSeparator {
@@ -34,10 +35,7 @@ public class FormulaSeparator {
                 if(op_f == SINCE || op_f == UNTIL) {
                     separateOperands(bf);
                     setupFormulaTree(bf);
-                    if(bf.getLoperand().isOperator(OR)) {
-                        return separate(lemmaA2(bf));
-                    }
-                    if(bf.getRoperand().isOperator(AND)) {
+                    if(needsLemmaA2(bf)) {
                         return separate(lemmaA2(bf));
                     }
                     int nc = nestingCase(bf);
@@ -100,19 +98,18 @@ public class FormulaSeparator {
             }
             if(of.isUnary()) {
                 UnaryFormula uf = (UnaryFormula) of;
-                if(uf.isOperator(NOT) && uf.getOperand().isOperator(NOT)){
-                    UnaryFormula op_uf = (UnaryFormula) uf.getOperand();
-                    return separate(op_uf.getOperand());
+                if(needsInvolution(uf)){ return separate(involution(uf)); }
+                else {
+                    separateOperand(uf);
+                    return uf;
                 }
-                separateOperand(uf);
-                return uf;
             }
         }
         return f;
     }
 
     /** Separates the left and the right operands of the formula.
-     * @param f The binary formula on which will be applied the separation on its the operands */
+     * @param f The binary formula on which will be applied the separation to its the operands */
     public static void separateOperands(BinaryFormula f){
         Formula lc = f.getLoperand();
         Formula rc = f.getRoperand();
@@ -121,9 +118,9 @@ public class FormulaSeparator {
     }
 
     /** Separates the operand of the formula.
-     * @param f The unary formula on which will be applied the separation on its the operand */
+     * @param f The unary formula on which will be applied the separation to its the operand */
     public static void separateOperand(UnaryFormula f){
-        f.setOperand(applyEliminations(f.getOperand()));
+        f.setOperand(separate(f.getOperand()));
     }
 
     /** @return Returns the number of the nesting case of the formula.
@@ -281,7 +278,8 @@ public class FormulaSeparator {
         if(lc.isOperator(AND)) {
 
             /* if the mirror operator is not found inside the left child of f then */
-            if(operatorChainSearch((BinaryFormula) lc, f.getOperator().getMirrorOperator()) == null){
+            if(operatorChainSearch((BinaryFormula) lc, f.getOperator().getMirrorOperator()) == null) {
+
                 /* if is found a formula whose operator is NOT and its operand is a formula with
                 * the mirror operator of f then switch it with the right child of f */
                 UnaryFormula notInAndChain = (UnaryFormula) operatorChainSearch((BinaryFormula) lc, NOT);
@@ -289,10 +287,10 @@ public class FormulaSeparator {
                 if(notInAndChain != null){
                     if(notInAndChain.getOperand().isOperator(f.getOperator().getMirrorOperator())){
                         rearrangeInnerFormula((BinaryFormula) lc, notInAndChain);
-
                     }
                 }
-                else {
+                //else {
+
                     BinaryFormula orInAndChain = (BinaryFormula) operatorChainSearch((BinaryFormula) lc, OR);
                     if(orInAndChain != null){
 
@@ -313,7 +311,7 @@ public class FormulaSeparator {
                             f.setLoperand(distributionRule((BinaryFormula) lc));
                         }
                     }
-                }
+                //}
 
             }
             /* if was found the mirror operator inside the left child of f then
@@ -362,165 +360,22 @@ public class FormulaSeparator {
             }
 
         }
-        /* if the left operand of f has a NOT operator and its operand has an OR one then
-        *  set as the left child the formula obtained by the application of the De Morgan Rule
-        * on the OR node */
-        if(lc.isOperator(NOT)){
-            UnaryFormula ulc = (UnaryFormula) lc;
-            if(ulc.getOperand().isOperator(OR)){
-                f.setLoperand(deMorganLaw(ulc));
+        /* if it is needed to apply the DeMorgan laws */
+        if(needsDeMorganLaw(f)) {
+            if(f.getLoperand().isOperator(NOT)){
+                UnaryFormula lf = (UnaryFormula) lc;
+                f.setLoperand(deMorganLaw(f, lf));
             }
-
-        }
-        /* if the right operand of f has a NOT operator and its operand has an AND one then
-         *  set as the left child the formula obtained by the application of the De Morgan Rule
-         * on the AND node */
-        if(rc.isOperator(NOT)){
-            UnaryFormula urc = (UnaryFormula) rc;
-            if(urc.getOperand().isOperator(AND)){
-                f.setLoperand(deMorganLaw(urc));
+            if(f.getRoperand().isOperator(NOT)){
+                UnaryFormula rf = (UnaryFormula) rc;
+                f.setRoperand(deMorganLaw(f, rf));
             }
         }
     }
 
-    /** Rearranges the chain of operators starting at f so that the formula with operator op is the right child of f.
-     * @param f The starting node of the operator chain
-     * @param op The operator of the formula that should be moved */
-    private static void setupOperatorChain(BinaryFormula f, Operator op){
-
-        /* Do the search of the operator op inside the operator chain starting at node f */
-        Formula searchedOperator = operatorChainSearch(f, op);
-
-        /* if the formula with operator op was found then */
-        if(searchedOperator != null) {
-            rearrangeInnerFormula(f, searchedOperator);
-        }
-    }
-
-    private static void rearrangeInnerFormula(BinaryFormula f, Formula sf) {
-
-        BinaryFormula sfPar = (BinaryFormula) sf.getParent();
-
-        // LEFT SUBTREE
-        /* if the searched operator is inside the left subtree of f then
-        swap it with the right child of f */
-        if (f.inLeftSubtree(sf)) {
-
-            Formula rf = f.getRoperand();
-
-                /* if the searched operator formula is the left child of its parent then
-                swap it with the right operand of f */
-            if (sfPar.isLeftChild(sf)) {
-                f.setRoperand(sf);
-                sfPar.setLoperand(rf);
-            }
-                /* if the searched operator formula is a right child and its parent is not f then
-                swap it with the right operand of f */
-            else if (!(sfPar.equals(f)) && sfPar.isRightChild(sf)) {
-                f.setRoperand(sf);
-                sfPar.setRoperand(rf);
-            }
-        }
 
 
-        // RIGHT SUBTREE
-            /* if the searched operator is inside the right subtree of f then
-            swap it with the left subtree of f and then flip the two children of f */
-        else if (f.inRightSubtree(sf)) {
 
-            Formula lf = f.getLoperand();
-
-                /* if the searched operator formula is the left child of its parent then
-                swap it with the left operand of f */
-            if (sfPar.isLeftChild(sf)) {
-                f.setLoperand(sf);
-                sfPar.setLoperand(lf);
-            }
-
-                /* if the searched operator formula is the right child of its parent then
-                swap it with the left operand of f */
-            else if (sfPar.isRightChild(sf)) {
-                f.setLoperand(sf);
-                sfPar.setRoperand(lf);
-            }
-            f.swapChildren();
-        }
-
-    }
-
-    /** Search, inside a chain of operators of the same type, the operator op.
-     * @param f The node on which start the search
-     * @param op The operator to be search inside the operator chain
-     * @return Returns a formula for which the operator corresponds to op */
-    private static Formula operatorChainSearch(BinaryFormula f, Operator op) {
-
-        /* if the right child operator of f corresponds to the operator op then
-        return the left child of f */
-        if(f.getRoperand().isOperator(op)) return f.getRoperand();
-
-        /* if the left child operator of f corresponds to the operator op then
-        return the left child of f */
-        if(f.getLoperand().isOperator(op)) return f.getLoperand();
-
-        /* if the operator of the right child of f is the same of f then
-        do the search on the right child of f and if not null return its result */
-        if(f.getRoperand().isOperator(f.getOperator())) {
-            Formula result = operatorChainSearch(
-                    (BinaryFormula) f.getRoperand(), op
-            );
-            if(result != null) return result;
-        }
-
-        /* if the operator of the left child of f is the same of f then
-        do the search on the left child of f and if not null return its result */
-        if(f.getLoperand().isOperator(f.getOperator())) {
-            Formula result = operatorChainSearch(
-                    (BinaryFormula) f.getLoperand(), op
-            );
-            if(result != null) return result;
-        }
-
-        /* for all the remaining cases return null */
-        return null;
-    }
-
-    public static Formula operatorChainSearchOfNegation(BinaryFormula f, Operator op){
-        /* if the right child operator of f corresponds to the negation of the operator op then
-        return the left child of f */
-        if(f.getRoperand().isOperator(NOT)) {
-            UnaryFormula rf = (UnaryFormula) f.getRoperand();
-            if(rf.getOperand().isOperator(op)) return rf;
-        }
-
-        /* if the left child operator of f corresponds to the operator op then
-        return the left child of f */
-        if(f.getLoperand().isOperator(NOT)){
-            UnaryFormula lf = (UnaryFormula) f.getLoperand();
-            if(lf.getOperand().isOperator(op)) return lf;
-
-        }
-
-        /* if the operator of the right child of f is the same of f then
-        do the search on the right child of f and if not null return its result */
-        if(f.getRoperand().isOperator(f.getOperator())) {
-            Formula result = operatorChainSearch(
-                    (BinaryFormula) f.getRoperand(), op
-            );
-            if(result != null) return result;
-        }
-
-        /* if the operator of the left child of f is the same of f then
-        do the search on the left child of f and if not null return its result */
-        if(f.getLoperand().isOperator(f.getOperator())) {
-            Formula result = operatorChainSearch(
-                    (BinaryFormula) f.getLoperand(), op
-            );
-            if(result != null) return result;
-        }
-
-        /* for all the remaining cases return null */
-        return null;
-    }
 
 
     /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination1 */
@@ -662,7 +517,5 @@ public class FormulaSeparator {
         al.add(q);
         return al;
     }
-
-
 
 }

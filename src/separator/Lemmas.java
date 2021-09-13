@@ -1,9 +1,55 @@
 package separator;
 
 import formula.BinaryFormula;
+import formula.UnaryFormula;
+
 import static formula.Operator.*;
+import static separator.OperatorChain.operatorChainSearch;
+import static separator.OperatorChain.operatorChainSearchOfNegation;
 
 public class Lemmas {
+
+    public static boolean needsLemmaA2(BinaryFormula f){
+        if(!(f.getOperator().equals(SINCE) || f.getOperator().equals(UNTIL))){
+            throw new IllegalArgumentException(
+                    String.format(
+                            "The operator of the formula should be S or U but is %s",
+                            f.getOperator()
+                    )
+            );
+        }
+
+        if(f.getLoperand().isOperator(OR)){
+            BinaryFormula lf = (BinaryFormula) f.getLoperand();
+            BinaryFormula andInOr = (BinaryFormula) operatorChainSearch(lf, AND);
+            if(andInOr != null){
+                BinaryFormula mirrorOpInAnd = (BinaryFormula) operatorChainSearch(andInOr, f.getOperator().getMirrorOperator());
+                if(mirrorOpInAnd != null){ return true; }
+                else{
+                    UnaryFormula negMirrorOpInAnd = (UnaryFormula) operatorChainSearchOfNegation(andInOr, f.getOperator().getMirrorOperator());
+                    return (negMirrorOpInAnd != null);
+                }
+            }
+        }
+
+        if(f.getRoperand().isOperator(AND)){
+            BinaryFormula rf = (BinaryFormula) f.getRoperand();
+            BinaryFormula orInAnd = (BinaryFormula) operatorChainSearch(rf, OR);
+            if(orInAnd != null){
+                BinaryFormula mirrorOpInOr = (BinaryFormula) operatorChainSearch(orInAnd, f.getOperator().getMirrorOperator());
+                if(mirrorOpInOr != null){
+                    return true;
+                }
+                else{
+                    BinaryFormula negMirrorOpInAnd = (BinaryFormula) operatorChainSearchOfNegation(orInAnd, f.getOperator().getMirrorOperator());
+                    return (negMirrorOpInAnd != null);
+                }
+            }
+        }
+
+        return false;
+    }
+
 
     /** ((A|B) U C) = (AUC) | (BUC) */
     public static BinaryFormula lemmaA2(BinaryFormula f){

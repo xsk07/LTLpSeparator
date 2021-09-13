@@ -1,6 +1,8 @@
 package converter;
 
 import formula.*;
+
+import static formula.BooleanRules.involution;
 import static formula.Operator.*;
 import static formula.AtomConstant.*;
 
@@ -42,6 +44,7 @@ public class FormulaConverter {
      * @param f An UnaryFormula */
     public static Formula applyUnaryRule(UnaryFormula f) throws IllegalArgumentException {
         return switch (f.getOperator()) {
+            case NOT -> involution(f);
             case ONCE -> ruleO(f);
             case HIST -> ruleH(f);
             case YEST -> ruleY(f);

@@ -399,35 +399,20 @@ public abstract class EliminationRules {
 
     }
 
+    /** E2 = (!A & !B & (q|(AUB)) & (aS(!A&q))) S (q|(AUB)) */
     public static BinaryFormula e6_E2(ArrayList<Formula> fms, Operator op){
 
-        /* (((!A & !B & (a S (q & !A))) | q) S (q | (AUB)))
-         | ((!A & !B & (a S (q & !A)) & (AUB)) S (q | (AUB))) */
+        // (!A & !B & (a S (q & !A)) & (q | (AUB))) S (q | (AUB))
         return new BinaryFormula(
-                OR,
-                // ((!A & !B & (a S (q & !A))) | q) S (q | (AUB))
+                op, // S
+                // !A & !B & (a S (q & !A)) & (q | (AUB))
                 new BinaryFormula(
-                        op, // S
-                        // (!A & !B & (a S (q & !A))) | q
-                        new BinaryFormula(
-                                OR,
-                                subformulaPattern19(fms, op), // !A & !B & (a S (q & !A))
-                                fms.get(3).deepCopy() // q
-                        ),
-                        //
+                        AND,
+                        subformulaPattern19(fms, op), // !A & !B & (a S (q & !A))
                         subformulaPattern12(fms, op) // q | (AUB)
                 ),
-                // (!A & !B & (a S (q & !A)) & (AUB)) S (q | (AUB))
-                new BinaryFormula(
-                        op,
-                        // !A & !B & (a S (q & !A)) & (AUB)
-                        new BinaryFormula(
-                                AND,
-                                subformulaPattern19(fms, op), // !A & !B & (a S (q & !A))
-                                subformulaPattern3(fms, op) // AUB
-                        ),
-                        subformulaPattern12(fms, op) // q | (AUB)
-                )
+                subformulaPattern12(fms, op) // q | (AUB)
+
         );
     }
 
