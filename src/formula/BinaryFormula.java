@@ -1,11 +1,6 @@
 package formula;
 
-import guru.nidi.graphviz.attribute.For;
-
 import java.util.Objects;
-
-import static formula.Operator.SINCE;
-import static formula.Operator.UNTIL;
 
 /** The BinaryFormula class represents an LTL formula which the root operator is of arity two (binary).
  * Each BinaryFormula has a tree structure. The left and the right children
@@ -145,8 +140,8 @@ public class BinaryFormula extends OperatorFormula {
     public boolean inLeftSubtree(Formula f){
         Formula nf = f;
         while(nf.getParent() != this && nf.getParent() != null) nf = nf.getParent();
-        if(nf.getParent().equals(this) && nf.equals(this.getLoperand())) return true;
-        return false;
+        return (nf.getParent().equals(this) && nf.equals(this.getLoperand()));
+
     }
 
     /** @return Returns true, if and only if, the formula f is found inside the right operand subtree
@@ -154,20 +149,7 @@ public class BinaryFormula extends OperatorFormula {
     public boolean inRightSubtree(Formula f){
         Formula nf = f;
         while(nf.getParent() != this && nf.getParent() != null) nf = nf.getParent();
-        if(nf.getParent().equals(this) && nf.equals(this.getRoperand())) return true;
-        return false;
-    }
-
-
-    public boolean needsToBePulledOut() {
-        if(this.isOperator(UNTIL) || this.isOperator(SINCE)){
-            Formula pf = this;
-            while(pf.getImage() != this.getImage()){
-                pf = pf.getParent();
-            }
-            return (pf.getImage() == this.getImage());
-        }
-        return false;
+        return (nf.getParent().equals(this) && nf.equals(this.getRoperand()));
     }
 
 }

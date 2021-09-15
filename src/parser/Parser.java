@@ -4,20 +4,6 @@ package parser;
 
     public class Parser/*@bgen(jjtree)*/implements ParserTreeConstants, ParserConstants {/*@bgen(jjtree)*/
   protected static JJTParserState jjtree = new JJTParserState();
-    /* Main entry point */
-    public static void main(String args[]) {
-        System.out.println("Reading from standard input...");
-        Parser t = new Parser(System.in);
-        try {
-            SimpleNode n = t.Input();
-            n.dump("");
-            System.out.println("Thank you.");
-        } catch (Exception e) {
-            System.out.println("Oops.");
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
 /* PRODUCTION RULES */
 

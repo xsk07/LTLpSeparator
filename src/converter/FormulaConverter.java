@@ -1,7 +1,6 @@
 package converter;
 
 import formula.*;
-
 import static formula.BooleanRules.involution;
 import static formula.Operator.*;
 import static formula.AtomConstant.*;

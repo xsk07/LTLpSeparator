@@ -4,7 +4,6 @@ import formula.BinaryFormula;
 import formula.Formula;
 import formula.Operator;
 import formula.UnaryFormula;
-
 import static formula.Operator.NOT;
 
 public abstract class OperatorChain {

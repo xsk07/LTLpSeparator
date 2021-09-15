@@ -2,7 +2,6 @@ package separator;
 
 import formula.BinaryFormula;
 import formula.UnaryFormula;
-
 import static formula.Operator.*;
 import static separator.OperatorChain.operatorChainSearch;
 import static separator.OperatorChain.operatorChainSearchOfNegation;
@@ -21,6 +20,17 @@ public class Lemmas {
 
         if(f.getLoperand().isOperator(OR)){
             BinaryFormula lf = (BinaryFormula) f.getLoperand();
+
+            BinaryFormula mirrOp = (BinaryFormula) operatorChainSearch(lf, f.getOperator().getMirrorOperator());
+            if(mirrOp != null){
+                return true;
+            }
+
+            BinaryFormula negMirrOp = (BinaryFormula) operatorChainSearchOfNegation(lf, f.getOperator().getMirrorOperator());
+            if(negMirrOp != null){
+                return true;
+            }
+
             BinaryFormula andInOr = (BinaryFormula) operatorChainSearch(lf, AND);
             if(andInOr != null){
                 BinaryFormula mirrorOpInAnd = (BinaryFormula) operatorChainSearch(andInOr, f.getOperator().getMirrorOperator());
@@ -34,6 +44,18 @@ public class Lemmas {
 
         if(f.getRoperand().isOperator(AND)){
             BinaryFormula rf = (BinaryFormula) f.getRoperand();
+
+            BinaryFormula mirrOp = (BinaryFormula) operatorChainSearch(rf, f.getOperator().getMirrorOperator());
+            if(mirrOp != null){
+                return true;
+            }
+
+            BinaryFormula negMirrOp = (BinaryFormula) operatorChainSearchOfNegation(rf, f.getOperator().getMirrorOperator());
+            if(negMirrOp != null){
+                return true;
+            }
+
+
             BinaryFormula orInAnd = (BinaryFormula) operatorChainSearch(rf, OR);
             if(orInAnd != null){
                 BinaryFormula mirrorOpInOr = (BinaryFormula) operatorChainSearch(orInAnd, f.getOperator().getMirrorOperator());

@@ -49,13 +49,13 @@ public class Translator {
      * Translates a SimpleNode, with an id corresponding to a binary operator,
      * into an equivalent formula.
      * @param n The node to translate
-     * @return Returns the form of the node into a equivalent formula form
+     * @return Returns the form of the node into an equivalent formula form
      * @see #fromSimpleNodeToFormula(SimpleNode)
      * */
     private static Formula translateBinaryNode(SimpleNode n) {
         SimpleNode lc = (SimpleNode) n.jjtGetChild(0); // left child of n
         SimpleNode rc = (SimpleNode) n.jjtGetChild(1); // right child of n
-        Operator op = fromString((String) n.jjtGetValue());
+        Operator op = fromString(n.jjtGetValue());
         BinaryFormula f = new BinaryFormula(op); // root formula
         Formula lOp = fromSimpleNodeToFormula(lc); // translation of the left child
         Formula rOp = fromSimpleNodeToFormula(rc); // translation of the right child
@@ -68,30 +68,30 @@ public class Translator {
     /** Translates a formula into an object of the GraphViz class.
      * @param f The formula to be translated
      * @return Returns the GraphViz representation of the formula f
-     * @see formula.Formula
-     * @see graphviz.GraphViz
+     * @see Formula
+     * @see GraphViz
      * */
     public static GraphViz fromFormulaToGraphViz(Formula f){
         GraphViz gv = new GraphViz();
-        gv.addln(gv.start_graph());
+        gv.add("graph G {");
         if(f.isAtomic()) {
             gv.addln(f.getImage() + ";");
         }
         if(f.isOperator()){
-            addLine(gv, (OperatorFormula) f);
+            operatorFormulaGraphViz(gv, (OperatorFormula) f);
         }
         gv.addln(gv.end_graph());
         return gv;
     }
 
     /** A fromFormulaToGraphViz subroutine.*/
-    private static void addLine(GraphViz gv, OperatorFormula f){
+    private static void operatorFormulaGraphViz(GraphViz gv, OperatorFormula f){
         if(f.isUnary()) {
             Formula c = ((UnaryFormula) f).getOperand();
             gv.addln(f.hashCode() + " [label=\"" + f.getImage() + "\"]" + ";");
             gv.addln(c.hashCode() + " [label=\"" + c.getImage() + "\"]" + ";");
-            gv.addln(f.hashCode() + "->" + c.hashCode() + ";");
-            if(c.isOperator()) addLine(gv, (OperatorFormula) c);
+            gv.addln(f.hashCode() + "--" + c.hashCode() + ";");
+            if(c.isOperator()) operatorFormulaGraphViz(gv, (OperatorFormula) c);
         }
         if(f.isBinary()) {
             Formula lc = ((BinaryFormula) f).getLoperand();
@@ -99,10 +99,10 @@ public class Translator {
             gv.addln(f.hashCode() + " [label=\"" + f.getImage() + "\"]" + ";");
             gv.addln(lc.hashCode() + " [label=\"" + lc.getImage() + "\"]" + ";");
             gv.addln(rc.hashCode() + " [label=\"" + rc.getImage() + "\"]" + ";");
-            gv.addln(f.hashCode() + "->" + lc.hashCode() + ";");
-            if(lc.isOperator()) addLine(gv, (OperatorFormula) lc);
-            gv.addln(f.hashCode() + "->" + rc.hashCode() + ";");
-            if(rc.isOperator()) addLine(gv, (OperatorFormula) rc);
+            gv.addln(f.hashCode() + "--" + lc.hashCode() + ";");
+            if(lc.isOperator()) operatorFormulaGraphViz(gv, (OperatorFormula) lc);
+            gv.addln(f.hashCode() + "--" + rc.hashCode() + ";");
+            if(rc.isOperator()) operatorFormulaGraphViz(gv, (OperatorFormula) rc);
         }
     }
 

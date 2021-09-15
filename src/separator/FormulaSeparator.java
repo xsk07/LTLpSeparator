@@ -2,12 +2,12 @@ package separator;
 
 import formula.*;
 import java.util.ArrayList;
+import static formula.AtomConstant.*;
 import static formula.BooleanRules.*;
 import static formula.Operator.*;
 import static separator.EliminationRules.*;
-import static separator.Lemmas.needsLemmaA2;
+import static separator.Lemmas.*;
 import static separator.OperatorChain.*;
-import static separator.Lemmas.lemmaA2;
 
 public class FormulaSeparator {
 
@@ -59,7 +59,7 @@ public class FormulaSeparator {
                         case 4 -> {
                             sfms = subformulas4(bf);
                             System.out.println("Elimination4");
-                            return elimination4_v1(sfms, op_f);
+                            return elimination4(sfms, op_f);
                         }
                         case 5 -> {
                             sfms = subformulas57(bf);
@@ -273,6 +273,52 @@ public class FormulaSeparator {
     private static void setupFormulaTree(BinaryFormula f) {
         Formula lc = f.getLoperand();
         Formula rc = f.getRoperand();
+
+        if(lc.isOperator(f.getOperator().getMirrorOperator())){
+            f.setLoperand(
+                    new BinaryFormula(
+                            AND,
+                            new AtomicFormula(TRUE),
+                            lc
+                    )
+            );
+        }
+
+        if(lc.isOperator(NOT)){
+            UnaryFormula ulc = (UnaryFormula) lc;
+            if(ulc.getOperand().isOperator(f.getOperator().getMirrorOperator())) {
+                f.setLoperand(
+                        new BinaryFormula(
+                                AND,
+                                new AtomicFormula(TRUE),
+                                lc
+                        )
+                );
+            }
+        }
+
+        if(rc.isOperator(f.getOperator().getMirrorOperator())){
+            f.setRoperand(
+                    new BinaryFormula(
+                            OR,
+                            new AtomicFormula(FALSE),
+                            rc
+                    )
+            );
+        }
+
+        if(rc.isOperator(NOT)){
+            UnaryFormula urc = (UnaryFormula) rc;
+            if(urc.getOperand().isOperator(f.getOperator().getMirrorOperator())){
+                f.setRoperand(
+                        new BinaryFormula(
+                                OR,
+                                new AtomicFormula(FALSE),
+                                rc
+                        )
+                );
+            }
+        }
 
         /*if the operator of the left child of f is an AND then */
         if(lc.isOperator(AND)) {

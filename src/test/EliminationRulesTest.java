@@ -20,10 +20,9 @@ class EliminationRulesTest {
     void elimination1() throws ParseException, IllegalArgumentException {
         separationTest(
                 "(a&(bUc))Sq",
-                "((aSq)&(aSc)&c&(bUc))|(b&(aS(c&q)))|((b&q&(aSc)&(aSq))Sq)"
+                "((aSq)&(aSc)&c&(bUc))|(b&(aS(q&c)))|((b&q&(aSc)&(aSq))Sq)"
         );
     }
-
 
     @Test
     @DisplayName("Elimination2")
@@ -33,7 +32,6 @@ class EliminationRulesTest {
                 "((aS(q&!b))&!b&!(bUc))|(!b&!c&(aS(q&!b)))|((!b&!c&q&(aS(q&!b)))Sq)"
         );
     }
-
 
     @Test
     @DisplayName("Elimination3")
@@ -46,17 +44,15 @@ class EliminationRulesTest {
         );
     }
 
-
     @Test
     @DisplayName("Elimination4.V1")
     void elimination4_1() throws ParseException, IllegalArgumentException {
         separationTest(
                 "aS(q|!(bUc))",
-                "!((!q&(bUc)&!a)S!a)&(aStrue)"
+                "!((!a&!q&(bUc))S!a)&(aStrue)"
 
         );
     }
-
 
     //@Test
     //@DisplayName("Elimination4.V2")
@@ -67,7 +63,6 @@ class EliminationRulesTest {
                 + "|(((!q&!a)S(!a&c))->!(b|(c&(bUc))))"
         );
     }
-
 
     @Test
     @DisplayName("Elimination5")
@@ -80,29 +75,26 @@ class EliminationRulesTest {
         );
     }
 
-
     @Test
     @DisplayName("Elimination6")
     void elimination6() throws ParseException, IllegalArgumentException {
         separationTest(
                 "(a&!(bUc))S(q|(bUc))",
                 "((aS(q&!b))&!b&!c)" +
-                        "|((!b&!c&(q|(bUc))&(aS(q&!b)))S(q|(bUc)))" +
+                        "|((!b&!c&(aS(q&!b))&(q|(bUc)))S(q|(bUc)))" +
                         "|((aS(q&!b))&!b&!(bUc))"
         );
     }
-
 
     @Test
     @DisplayName("Elimination7")
     void elimination7() throws ParseException, IllegalArgumentException {
         separationTest(
                 "(a&(bUc))S(q|!(bUc))",
-                "((b&(q|!(bUc))&(aS(c&q)))S(q|!(bUc)))" +
-                        "|((aS(c&q))&b)" + "|((aS(c&q))&c&(bUc))"
+                "((b&(q|!(bUc))&(aS(q&c)))S(q|!(bUc)))" +
+                        "|((aS(q&c))&b)" + "|((aS(q&c))&c&(bUc))"
         );
     }
-
 
     @Test
     @DisplayName("Elimination8")
@@ -112,9 +104,7 @@ class EliminationRulesTest {
                 "!(!(!a|(bUc))Strue)"+"|((!q&(bUc)&!a)S(!a|(bUc)))"+
                         "|((!q&(bUc))S(!a|(bUc)))"
         );
-
     }
-
 
     private void separationTest(String formula, String expectedFormula) throws ParseException, IllegalArgumentException {
         byte[] formulaBytes = formula.getBytes();
