@@ -21,4 +21,4 @@ and <a href="https://www.brics.dk/mona/" title="MONA">MONA</a>.
 - Separation of LTLpf formulas into a triple of pure past, pure present and pure future ones, 
 built up on basic boolean operators and by the only binary temporal operators Until and Since, 
 with the possibility of viewing the elimination rules of the Separation Theorem applied by the algorithm;
-- Visualization of pure formulas as DFA automata;
+- Visualization of pure formulae as DFA automata;
