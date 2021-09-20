@@ -18,4 +18,4 @@ The instructions are available at <a href="https://github.com/whitemech/LTLf2DFA
 - Separation of LTLpf formulas into a triple of pure past, pure present and pure future ones, 
 built up on basic boolean operators and on the only binary temporal operators Until and Since, 
 with the possibility of viewing the elimination rules of the Separation Theorem applied by the algorithm, and the generation of the triple of automata;
-- Visualization of pure formulae as DFA automata;
+- Visualization of pure formulae as DFAs;
