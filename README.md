@@ -16,6 +16,6 @@ The instructions are available at <a href="https://github.com/whitemech/LTLf2DFA
 - Conversion of LTLpf formulas containing unary temporal operators into an equivalent form of the US temporal logic;
 - Visualization of the formulae as trees;
 - Separation of LTLpf formulas into a triple of pure past, pure present and pure future ones, 
-built up using only basic boolean and the two binary temporal operators: Since and Until, it is also possible to view 
+built up using only basic boolean and the two binary temporal operators Since and Until, it is also possible to view 
 the elimination rules of the Separation Theorem applied by the algorithm, and to generate the respective triple of automatas;
 - Visualization of pure formulae as DFAs;
