@@ -1,10 +1,10 @@
 package separator;
 
-import formula.BinaryFormula;
-import formula.Formula;
-import formula.Operator;
-import formula.UnaryFormula;
-import static formula.Operator.NOT;
+import formula.*;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import static formula.Operator.*;
 
 public abstract class OperatorChain {
 
@@ -57,13 +57,12 @@ public abstract class OperatorChain {
         if(f.getLoperand().isOperator(NOT)){
             UnaryFormula lf = (UnaryFormula) f.getLoperand();
             if(lf.getOperand().isOperator(op)) return lf;
-
         }
 
         /* if the operator of the right child of f is the same of f then
         do the search on the right child of f and if not null return its result */
         if(f.getRoperand().isOperator(f.getOperator())) {
-            Formula result = operatorChainSearch(
+            Formula result = operatorChainSearchOfNegation(
                     (BinaryFormula) f.getRoperand(), op
             );
             if(result != null) return result;
@@ -72,7 +71,7 @@ public abstract class OperatorChain {
         /* if the operator of the left child of f is the same of f then
         do the search on the left child of f and if not null return its result */
         if(f.getLoperand().isOperator(f.getOperator())) {
-            Formula result = operatorChainSearch(
+            Formula result = operatorChainSearchOfNegation(
                     (BinaryFormula) f.getLoperand(), op
             );
             if(result != null) return result;
@@ -99,54 +98,79 @@ public abstract class OperatorChain {
 
     public static void rearrangeInnerFormula(BinaryFormula f, Formula sf) {
 
-        BinaryFormula sfPar = (BinaryFormula) sf.getParent();
+        if(f != sf) {
 
-        // LEFT SUBTREE
-        /* if the searched operator is inside the left subtree of f then
-        swap it with the right child of f */
-        if (f.inLeftSubtree(sf)) {
+            BinaryFormula sfPar = (BinaryFormula) sf.getParent();
 
-            Formula rf = f.getRoperand();
+            // LEFT SUBTREE
+            /* if the searched operator is inside the left subtree of f then
+            swap it with the right child of f */
+            if (sf.isInLeftSubtreeOf(f)) {
+
+                Formula rf = f.getRoperand();
 
                 /* if the searched operator formula is the left child of its parent then
                 swap it with the right operand of f */
-            if (sfPar.isLeftChild(sf)) {
-                f.setRoperand(sf);
-                sfPar.setLoperand(rf);
-            }
+                if (sfPar.isLeftChild(sf)) {
+                    f.setRoperand(sf);
+                    sfPar.setLoperand(rf);
+                }
                 /* if the searched operator formula is a right child and its parent is not f then
                 swap it with the right operand of f */
-            else if (!(sfPar.equals(f)) && sfPar.isRightChild(sf)) {
-                f.setRoperand(sf);
-                sfPar.setRoperand(rf);
+                else if (!(sfPar.equals(f)) && sfPar.isRightChild(sf)) {
+                    f.setRoperand(sf);
+                    sfPar.setRoperand(rf);
+                }
             }
-        }
 
 
-        // RIGHT SUBTREE
+            // RIGHT SUBTREE
             /* if the searched operator is inside the right subtree of f then
             swap it with the left subtree of f and then flip the two children of f */
-        else if (f.inRightSubtree(sf)) {
+            else if (sf.isInRightSubtreeOf(f)) {
 
-            Formula lf = f.getLoperand();
+                Formula lf = f.getLoperand();
 
                 /* if the searched operator formula is the left child of its parent then
                 swap it with the left operand of f */
-            if (sfPar.isLeftChild(sf)) {
-                f.setLoperand(sf);
-                sfPar.setLoperand(lf);
-            }
+                if (sfPar.isLeftChild(sf)) {
+                    f.setLoperand(sf);
+                    sfPar.setLoperand(lf);
+                }
 
                 /* if the searched operator formula is the right child of its parent then
                 swap it with the left operand of f */
-            else if (sfPar.isRightChild(sf)) {
-                f.setLoperand(sf);
-                sfPar.setRoperand(lf);
+                else if (sfPar.isRightChild(sf)) {
+                    f.setLoperand(sf);
+                    sfPar.setRoperand(lf);
+                }
+                f.swapChildren();
             }
-            f.swapChildren();
         }
 
     }
+
+    public static FormulaeList getBorderNodes(BinaryFormula f) {
+        FormulaeList al = new FormulaeList();
+        Queue<BinaryFormula> q = new LinkedList<>();
+        q.add(f);
+        while(!q.isEmpty()) {
+            BinaryFormula nf = q.remove();
+            /* if the left operand have the same operator of the root add it to the
+             * loop queue else add it to the result array list */
+            if(nf.getLoperand().isOperator(f.getOperator())) q.add((BinaryFormula) nf.getLoperand());
+            else al.add(nf.getLoperand());
+            /* if the right operand have the same operator of the root add it to the
+             * loop queue else add it to the result array list */
+            if(nf.getRoperand().isOperator(f.getOperator())) q.add((BinaryFormula) nf.getRoperand());
+            else al.add(nf.getRoperand());
+        }
+        return al;
+    }
+
+
+
+
 
 
 

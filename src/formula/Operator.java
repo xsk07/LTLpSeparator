@@ -1,24 +1,26 @@
 package formula;
 
+import static formula.TimeConstant.*;
+
 /** The Operator class represents the entire set of operators */
 public enum Operator {
 
-    NOT (false,"!", 1),
-    AND (false,"&", 2),
-    OR (false,"|", 2),
-    IMPL (false,"->", 2),
-    EQUIV (false,"<->", 2),
-    UNTIL (true,"U", 2),
-    SINCE (true,"S", 2),
-    UNLESS (true,"W", 2),
-    ONCE (true,"O", 1),
-    HIST (true,"H", 1),
-    YEST (true,"Y", 1),
-    FIN (true,"F", 1),
-    GLOB (true,"G", 1),
-    NEXT (true,"X", 1);
+    NOT (PRESENT,"!", 1),
+    AND (PRESENT,"&", 2),
+    OR (PRESENT,"|", 2),
+    IMPL (PRESENT,"->", 2),
+    EQUIV (PRESENT,"<->", 2),
+    UNTIL (FUTURE,"U", 2),
+    SINCE (PAST,"S", 2),
+    UNLESS (FUTURE,"W", 2),
+    ONCE (PAST,"O", 1),
+    HIST (PAST,"H", 1),
+    YEST (PAST,"Y", 1),
+    FIN (FUTURE,"F", 1),
+    GLOB (FUTURE,"G", 1),
+    NEXT (FUTURE,"X", 1);
 
-    private final boolean temporal;
+    private final TimeConstant time;
     private final int arity;
     private final String image;
     private Operator mirrorOperator;
@@ -42,26 +44,37 @@ public enum Operator {
 
     }
 
-    Operator(boolean temp, String img, int n) {
-        this.temporal = temp;
+    Operator(TimeConstant t, String img, int n) {
+        this.time = t;
         this.image = img;
         this.arity = n;
-        mirrorOperator = null;
     }
 
-    /** @return Returns true if, and only if, represents a temporal operator */
-    public boolean isTemporal() { return temporal; }
+    public TimeConstant getTime(){ return time; }
+
+    /** @return Returns true if, and only if, is a past operator */
+    public boolean isPast(){return time == PAST;}
+
+    /** @return Returns true if, and only if, is a present operator */
+    public boolean isPresent(){return time == PRESENT;}
+
+    /** @return Returns true if, and only if, is a past operator */
+    public boolean isFuture(){return time == FUTURE;}
 
     /** @return Returns the arity of the operator */
     public int getArity() { return arity; }
+
+    /** @return Returns true if, and only if, it is a unary operator */
+    public boolean isUnary() {return arity == 1; }
+
+    /** @return Returns true if, and only if, it is a binary operator */
+    public boolean isBinary() {return arity == 2; }
 
     /** @return Returns the image of the operator */
     public String getImage() { return image; }
 
     /** @return Returns true if, and only if, has a mirror operator */
-    public boolean hasMirrorOperator(){
-        return mirrorOperator != null;
-    }
+    public boolean hasMirrorOperator(){ return mirrorOperator != null; }
 
     /** @return Returns the mirror operator */
     public Operator getMirrorOperator() {
@@ -70,7 +83,7 @@ public enum Operator {
     }
 
     @Override
-    public String toString(){return image;}
+    public String toString(){ return image; }
 
     /** @return Returns the OperatorConstant corresponding to the string in input
      * @param str A string image */

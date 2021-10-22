@@ -1,6 +1,8 @@
 package formula;
 
 import static formula.TypeConstant.*;
+import static formula.AtomConstant.*;
+import static formula.TimeConstant.*;
 
 /** The AtomicFormula class represents an atomic LTL formula. */
 public class AtomicFormula extends Formula {
@@ -13,6 +15,8 @@ public class AtomicFormula extends Formula {
     public AtomicFormula(AtomConstant c) {
         super(ATOM);
         this.image = c.getImage();
+        this.setTime(PRESENT);
+        this.setSeparation(true);
     }
 
     /** Initializes a newly created AtomicFormula from an AtomConstant and a formula which will be its parent.
@@ -20,18 +24,26 @@ public class AtomicFormula extends Formula {
     public AtomicFormula(AtomConstant c, OperatorFormula p) {
         super(ATOM, p);
         this.image = c.getImage();
+        this.setTime(PRESENT);
+        this.setSeparation(true);
+
     }
 
     /** Returns an AtomicFormula created from a string image. */
     public AtomicFormula(String img) {
         super(ATOM);
         this.image = img;
+        this.setTime(PRESENT);
+        this.setSeparation(true);
+
     }
 
     /** Initializes a newly created AtomicFormula from a string image and a formula which will be its parent. */
     public AtomicFormula(String img, OperatorFormula p) {
         super(ATOM, p);
         this.image = img;
+        this.setTime(PRESENT);
+        this.setSeparation(true);
     }
 
     /** Sets the image of the formula. */
@@ -53,6 +65,19 @@ public class AtomicFormula extends Formula {
     @Override
     public boolean equals(Formula f) {
         return f.isAtomic() && this.getImage().equals(f.getImage());
+    }
+
+    /** @return Returns true if, and only if, the formula represents the atomic "true" formula */
+    public boolean isTrue(){ return (this.image.equals(TRUE.getImage())); }
+
+    /** @return Returns true if, and only if, the formula represents the atomic "false" formula */
+    public boolean isFalse(){
+        return (this.image.equals(FALSE.getImage()));
+    }
+
+    /** @return Returns true if, and only if, the formula represents a truth value */
+    public boolean isTruthValue(){
+        return (this.isTrue() || this.isFalse() );
     }
 
 }

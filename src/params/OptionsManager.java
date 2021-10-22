@@ -45,7 +45,7 @@ public class OptionsManager {
                 "oF",
                 "outputFile",
                 true,
-                "filename to which the transformed formula is written"
+                "filename of the output"
         );
         output.setArgName("FILE");
         options.addOption(output);

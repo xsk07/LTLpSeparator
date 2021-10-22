@@ -9,8 +9,7 @@ import parser.Parser;
 import parser.SimpleNode;
 import java.io.ByteArrayInputStream;
 import static org.junit.jupiter.api.Assertions.*;
-import static separator.FormulaSeparator.applyEliminations;
-import static translator.Translator.fromSimpleNodeToFormula;
+import static separator.FormulaSeparator.applyElimination;
 
 
 class EliminationRulesTest {
@@ -112,8 +111,8 @@ class EliminationRulesTest {
         System.setIn(formulaStream);
         Parser parser = new Parser(System.in);
         SimpleNode tree = parser.Input();
-        BinaryFormula treeFormula = (BinaryFormula) fromSimpleNodeToFormula(tree);
-        Formula separatedFormula = applyEliminations(treeFormula);
+        BinaryFormula treeFormula = (BinaryFormula) tree.fromSimpleNodeToFormula();
+        Formula separatedFormula = applyElimination(treeFormula);
         assertEquals(expectedFormula, separatedFormula.toString());
     }
 

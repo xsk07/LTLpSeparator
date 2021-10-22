@@ -8,5 +8,6 @@ public enum OutputEncoding {
     ps,
     svg,
     png,
-    plain
+    plain,
+    txt
 }

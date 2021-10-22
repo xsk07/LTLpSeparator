@@ -140,8 +140,8 @@ public class GraphViz
      */
     public GraphViz() {
         if (GraphViz.osName.contains("Windows")) {
-            this.tempDir = "c:/temp";
-            this.executable = "c:/Program Files (x86)/Graphviz 2.28/bin/dot.exe";
+            this.tempDir = "D:/University/tirocinio-tesi/interno/LTLfSeparator/dout/temp";
+            this.executable = "C:/Program Files/Graphviz/bin/dot.exe";
         } else if (GraphViz.osName.equals("MacOSX")) {
             this.tempDir = "/tmp";
             this.executable = "/usr/local/bin/dot";
@@ -186,8 +186,9 @@ public class GraphViz
 
     /**
      * Adds a newline to the graph's source.
+     * @param i
      */
-    public void addln() {
+    public void addln(int i) {
         this.graph.append('\n');
     }
 

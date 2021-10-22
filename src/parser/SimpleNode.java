@@ -2,8 +2,10 @@
 /* JavaCCOptions:MULTI=false,NODE_USES_PARSER=false,VISITOR=false,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package parser;
 
-public
-class SimpleNode implements Node {
+import formula.*;
+import static formula.Operator.fromString;
+
+public class SimpleNode implements Node {
 
   protected Node parent;
   protected Node[] children;
@@ -56,7 +58,7 @@ class SimpleNode implements Node {
   /* You can override these two methods in subclasses of SimpleNode to
      customize the way the node appears when the tree is dumped.  If
      your output uses more than one line you should override
-     toString(String), otherwise overriding toString() is probably all
+     printPath(String), otherwise overriding printPath() is probably all
      you need to do. */
 
   public String toString() {
@@ -82,6 +84,61 @@ class SimpleNode implements Node {
   public int getId() {
     return id;
   }
+
+  /** Translates a parse tree, consisting of the instances of the SimpleNode class,
+   * into an instance of the Formula class.
+   * @return Returns a formula which is the translated form of the parse tree on which the method was called
+   * @see formula.Formula */
+  public Formula fromSimpleNodeToFormula() throws IllegalArgumentException {
+    switch(this.getId()){
+      case 0: { //INPUT
+                /* Jump the Input node and return, as the root of the formula, the
+                formula translation of its unique child */
+        SimpleNode c = (SimpleNode) this.jjtGetChild(0);
+        return c.fromSimpleNodeToFormula();
+      }
+      // ALL BINARY
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+      case 6: return translateBinaryNode(this);
+      case 7: { //UNARY
+        SimpleNode c = (SimpleNode) this.jjtGetChild(0);
+        String img = this.jjtGetValue();
+        return new UnaryFormula(
+                fromString(img),
+                c.fromSimpleNodeToFormula()
+        );
+      }
+      case 8: { //ATOM
+        /* return an atomic formula with the same image of the node n */
+        return new AtomicFormula(this.jjtGetValue());
+      }
+      default: throw new IllegalArgumentException(
+              String.format("The node should have an id value between 0 and 8, but it has %s", this.getId())
+      );
+    }
+  }
+
+  /** A fromSimpleNodeToFormula subroutine.
+   * Translates a SimpleNode, with an id corresponding to a binary operator,
+   * into an equivalent formula.
+   * @param n The SimpleNode to translate
+   * @return Returns the translation of the node into a formula
+   * @see #fromSimpleNodeToFormula()
+   * */
+  private static Formula translateBinaryNode(SimpleNode n) {
+    SimpleNode lc = (SimpleNode) n.jjtGetChild(0); // left child of n
+    SimpleNode rc = (SimpleNode) n.jjtGetChild(1); // right child of n
+    Operator op = fromString(n.jjtGetValue());
+    return new BinaryFormula(
+            op,
+            lc.fromSimpleNodeToFormula(), // translation of the left child
+            rc.fromSimpleNodeToFormula() // translation of the right child
+    );
+  }
+
 
 }
 

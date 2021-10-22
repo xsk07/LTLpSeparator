@@ -8,16 +8,20 @@ public abstract class OperatorFormula extends Formula {
 
     public OperatorFormula(Operator op) {
         super(OPERATOR);
-        this.operator = op;
+        this.setOperator(op);
     }
 
     public OperatorFormula(Operator op, OperatorFormula p) {
         super(OPERATOR, p);
-        this.operator = op;
+        this.setOperator(op);
     }
 
     /** Sets the operator of the formula */
-    public void setOperator(Operator op) { this.operator = op; }
+    public void setOperator(Operator op) {
+        this.operator = op;
+        this.setTime(op.getTime());
+        this.setSeparation(true);
+    }
 
     /** @return Returns the operator of the formula */
     public Operator getOperator(){
@@ -34,7 +38,24 @@ public abstract class OperatorFormula extends Formula {
         return operator.getArity() == 2;
     }
 
+    public boolean isParentOf(Formula f){
+        return f.getParent().equals(this);
+    }
+
+    public boolean isAncestorOf(Formula f) {
+        OperatorFormula p = f.getParent();
+        while (p != null && !p.equals(this)) {
+            p = p.getParent();
+
+        }
+        return (p != null && p.equals(this));
+    }
+
     /** @return Returns the image of the top operator of the formula */
     public String getImage(){ return this.operator.getImage(); }
+
+    protected abstract void updateTime(Formula f);
+
+    protected abstract void updateSeparation();
 
 }

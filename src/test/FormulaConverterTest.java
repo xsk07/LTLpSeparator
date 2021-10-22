@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static converter.FormulaConverter.convert;
 import static org.junit.jupiter.api.Assertions.*;
-import static translator.Translator.fromSimpleNodeToFormula;
 import parser.ParseException;
 import parser.Parser;
 import parser.SimpleNode;
@@ -121,7 +120,7 @@ class FormulaConverterTest {
         System.setIn(templateStream);
         Parser parser = new Parser(System.in);
         SimpleNode tree = parser.Input();
-        Formula templateFormula = fromSimpleNodeToFormula(tree);
+        Formula templateFormula = tree.fromSimpleNodeToFormula();
         Formula templateConverted = convert(templateFormula);
         assertEquals(templateConverted.toString(), result);
     }

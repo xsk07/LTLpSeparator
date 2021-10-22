@@ -236,6 +236,8 @@ public abstract class EliminationRules {
      * Where: fms[0] == a, fms[1] == A, fms[2] == B, fms[3] == q
      */
     public static BinaryFormula elimination4(ArrayList<Formula> fms, Operator op){
+        Operator uOp = ONCE;
+        if(op.equals(UNTIL))  uOp = FIN;
 
         // !(((!q & (AUB)) & !a) S !a) & Oa
         return new BinaryFormula(
@@ -249,7 +251,7 @@ public abstract class EliminationRules {
                 // Oa
                 convert(
                         new UnaryFormula (
-                                ONCE,
+                                uOp, // O
                                 fms.get(0).deepCopy(), // a
                                 null
                         )
@@ -484,10 +486,13 @@ public abstract class EliminationRules {
     /** E1 = H(!a|(AUB)) */
     public static UnaryFormula e8_E1(ArrayList<Formula> fms, Operator op) {
 
+        Operator uOp = HIST;
+        if(op.equals(UNTIL)) uOp = GLOB;
+
         // H(!a|(AUB))
         return new UnaryFormula(
-                HIST,
-                (Formula) subformulaPattern15(fms, op), // !a|(AUB)
+                uOp, // H
+                subformulaPattern15(fms, op), // !a|(AUB)
                 null
         );
 
@@ -578,7 +583,7 @@ public abstract class EliminationRules {
      **/
     public static BinaryFormula ennaryDisjunction(ArrayList<Formula> fms) {
         if(fms.size() < 2) throw new IllegalArgumentException(
-                String.format("The list of formulas should have size at least two to be possible to create a new disjunction formula")
+                "The list of formulas should have size at least two to be possible to create a new disjunction formula"
         );
         Formula first = fms.get(0);
         BinaryFormula result = null;
