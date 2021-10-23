@@ -6,25 +6,15 @@ import pydot
 from ltlf2dfa.parser.ltlf import LTLfParser
 
 
-if __name__ == "__main__":
-    main()
-
-
 def main():
-    ''' create a directory called automatons 
-    if such directory already exists,
-    delete itself and its content and create it again '''
+
     if(os.path.exists('automatons')):
         shutil.rmtree('automatons')
     os.mkdir('automatons')
 
-    ''' read the json file containing the matrix representation 
-    of the disjunctive normal form of the formula and for each 
-    row of the matrix create a directory  '''
-
-    with open('matrix.json', encoding='utf-8-sig') as f: 
+    with open('matrix.json') as f:
         matrix = json.load(f)
-        
+
     for i in range(len(matrix)):
         os.mkdir('automatons/{!s}'.format(i+1))
         save_dfa(matrix[i][0], i+1, 'past')
@@ -38,8 +28,11 @@ def save_dfa(phi, row, time):
     dfa = formula.to_dfa()
     graphs = pydot.graph_from_dot_data(dfa)
     graph = graphs[0]
-    graph.write_png('automatons/{!s}/{}/.png'.format(row, time))
+    graph.write_png('automatons/{!s}/{}.png'.format(row, time))
 
+
+if __name__ == "__main__":
+    main()
 
 
 
