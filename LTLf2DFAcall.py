@@ -4,6 +4,7 @@ import json
 import shutil
 import pydot
 from ltlf2dfa.parser.ltlf import LTLfParser
+from ltlf2dfa.parser.pltlf import PLTLfParser
 
 
 def main():
@@ -23,7 +24,8 @@ def main():
 
 
 def save_dfa(phi, row, time):
-    parser = LTLfParser()
+    if(time == 'past'): parser = PLTLfParser()
+    else: parser = LTLfParser()
     formula = parser(phi)
     dfa = formula.to_dfa()
     graphs = pydot.graph_from_dot_data(dfa)
