@@ -1,37 +1,64 @@
 package converter;
 
 import formula.*;
-
 import java.util.LinkedList;
 import java.util.Queue;
-
+import java.util.Stack;
 import static formula.BooleanRules.*;
 import static converter.ConversionRules.*;
 
 
 public class FormulaConverter {
 
-    /** Converts a formula, applying a set of equivalence and rewrite rules, into a form
-     * containing only boolean and the two binary temporal operators since and until.
-     * @param f The formula to be converted
-     * @return Returns a formula containing only boolean and the binary operators since
-     * and until */
-    public static Formula convert(Formula f) throws IllegalArgumentException {
-        if(f.isOperator()){
-            OperatorFormula of = (OperatorFormula) f;
-            if(of.isUnary()) {
+    private Formula root;
+
+    public void setRoot(Formula f) { root = f; }
+
+    public Formula getRoot() { return root; }
+
+    public void updateRoot(Formula f) {
+        if(f.getParent() == null && f != root) setRoot(f);
+    }
+
+    public Formula convert(Formula phi) throws IllegalArgumentException {
+
+        this.setRoot(phi);
+
+        /* the stack and the queue will contain by construction only OperatorFormulas */
+        Stack<Formula> stack = new Stack<>();
+        Queue<Formula> queue = new LinkedList<>();
+        /* if phi is an OperatorFormula then initialize the queue with it */
+        if(phi.isOperator()) queue.add(phi);
+
+        while(!queue.isEmpty()) {
+            OperatorFormula f = (OperatorFormula) queue.remove();
+            if(f.getOperator().isDerived()) stack.push(f);
+            if(f.isUnary()) {
                 UnaryFormula uf = (UnaryFormula) f;
-                uf.setOperand(convert(uf.getOperand()));
-                return applyUnaryRule(uf);
+                if(uf.getOperand().isOperator()) queue.add(uf.getOperand());
             }
-            if(of.isBinary()){
+            if(f.isBinary()) {
                 BinaryFormula bf = (BinaryFormula) f;
-                bf.setLoperand(convert(bf.getLoperand()));
-                bf.setRoperand(convert(bf.getRoperand()));
-                return applyBinaryRule(bf);
+                if(bf.getLoperand().isOperator()) queue.add(bf.getLoperand());
+                if(bf.getRoperand().isOperator()) queue.add(bf.getRoperand());
             }
         }
-        return f;
+
+        while(!stack.isEmpty()) {
+            OperatorFormula f = (OperatorFormula) stack.pop();
+            if(f.isUnary()) updateRoot(
+                    f.replaceFormula(
+                            applyUnaryRule((UnaryFormula) f)
+                    )
+            );
+            else if(f.isBinary()) updateRoot(
+                    f.replaceFormula(
+                            applyBinaryRule((BinaryFormula) f)
+                    )
+            );
+        }
+
+        return root;
     }
 
     /** Returns the formula which is the result of the application of
@@ -39,7 +66,7 @@ public class FormulaConverter {
      * @return Returns the formula which is the result of the application of
      * the unary rule corresponding to the operator of the formula got in input
      * @param f An UnaryFormula */
-    public static Formula applyUnaryRule(UnaryFormula f) throws IllegalArgumentException {
+    private Formula applyUnaryRule(UnaryFormula f) throws IllegalArgumentException {
         return switch (f.getOperator()) {
             case NOT -> involution(f);
             case ONCE -> ruleO(f);
@@ -57,7 +84,7 @@ public class FormulaConverter {
      * @return Returns the formula which is the result of the application of
      * the binary rule corresponding to the operator of the formula got in input
      * @param f An UnaryFormula */
-    public static BinaryFormula applyBinaryRule(BinaryFormula f) {
+    private BinaryFormula applyBinaryRule(BinaryFormula f) {
         return switch (f.getOperator()) {
             case IMPL -> implicationRule(f);
             case EQUIV -> equivalenceRule(f);
@@ -65,7 +92,5 @@ public class FormulaConverter {
             default -> f;
         };
     }
-
-
 
 }

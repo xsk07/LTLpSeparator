@@ -6,11 +6,13 @@ import org.junit.jupiter.api.Test;
 import parser.ParseException;
 import parser.Parser;
 import parser.SimpleNode;
+import separator.FormulaSeparator;
 import java.io.ByteArrayInputStream;
 import static org.junit.jupiter.api.Assertions.*;
-import static separator.FormulaSeparator.unify;
 
 class UnificationTest {
+
+    private FormulaSeparator separator = new FormulaSeparator();
 
     @Test
     @DisplayName("ANDSameChildren")
@@ -115,7 +117,7 @@ class UnificationTest {
         Parser parser = new Parser(System.in);
         SimpleNode tree = parser.Input();
         BinaryFormula treeFormula = (BinaryFormula) tree.fromSimpleNodeToFormula();
-        Formula unifiedFormula = unify(treeFormula);
+        Formula unifiedFormula = separator.unify(treeFormula);
         assertEquals(expectedFormula, unifiedFormula.toString());
     }
 

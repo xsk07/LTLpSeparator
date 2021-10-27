@@ -1,7 +1,7 @@
 package formula;
+
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import static formula.AtomConstant.*;
 import static formula.Operator.AND;
 import static formula.Operator.OR;

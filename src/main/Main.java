@@ -1,34 +1,34 @@
 package main;
 
+import converter.FormulaConverter;
 import formula.Formula;
 import graphviz.GraphViz;
 import org.apache.commons.cli.*;
 import parser.ParseException;
 import parser.Parser;
 import parser.SimpleNode;
-import separator.PureFormulaeMatrix;
-
+import separator.FormulaSeparator;
 import java.io.IOException;
 import java.io.InputStream;
-import static converter.FormulaConverter.convert;
 import static params.InputManager.readFile;
 import static params.OptionsManager.initializeOptions;
 import static params.OutputManager.graphVizOutput;
-import static params.OutputManager.matrixToJsonFile;
-import static separator.FormulaSeparator.*;
+
 
 public class Main {
 
     private static final int DEFAULT_PROMPT_WIDTH = 160;
-    public static final String DEFAULT_ENCODING = "png";
-    public static final InputStream DEFAULT_INPUT_SOURCE = System.in;
-    public  static final String DEFAULT_OUTPUT_FILENAME = "dout/out.";
+    private static final String DEFAULT_ENCODING = "png";
+    private static final InputStream DEFAULT_INPUT_SOURCE = System.in;
+    private static final String DEFAULT_OUTPUT_FILENAME = "dout/out.";
+    private static FormulaConverter converter = new FormulaConverter();
+    private static FormulaSeparator separator = new FormulaSeparator();
 
 
     public static void main(String[] args) throws ParseException, IllegalArgumentException {
 
-        String header = "Separates a LTLf formula into a triple of pure past, pure present and pure future ones\n\n";
-        String footer = "\nPlease report issues at https://github.com/xsk07/Thesis";
+        String header = "Separates a LTLpf formula into triples of pure past, pure present and pure future automatons\n\n";
+        String footer = "\nPlease report issues at: "; //https://github.com/xsk07/Thesis
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
@@ -66,9 +66,9 @@ public class Main {
                 Parser parser = new Parser(inputSource);
                 SimpleNode tree = parser.Input();
                 Formula phi = tree.fromSimpleNodeToFormula();
-                Formula phic = convert(phi);
+                Formula phic = converter.convert(phi);
                 System.out.println("Formula separation: ");
-                Formula phis = separate(phic);
+                Formula phis = separator.separate(phic);
                 System.out.println("Separation performed.");
                 System.out.println("Normalization of the formula: ");
                 //phis = normalize(phis);
@@ -84,7 +84,8 @@ public class Main {
                 Parser parser = new Parser(inputSource);
                 SimpleNode tree = parser.Input();
                 Formula phi = tree.fromSimpleNodeToFormula();
-                Formula phic = convert(phi);
+                FormulaConverter c = new FormulaConverter();
+                Formula phic = c.convert(phi);
                 GraphViz gv = phic.fromFormulaToGraphViz();
                 graphVizOutput(gv, outFile, outputEncoding);
             }

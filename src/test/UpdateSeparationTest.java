@@ -1,5 +1,6 @@
 package test;
 
+import converter.FormulaConverter;
 import formula.Formula;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,7 +8,6 @@ import parser.ParseException;
 import parser.Parser;
 import parser.SimpleNode;
 import java.io.ByteArrayInputStream;
-import static converter.FormulaConverter.convert;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UpdateSeparationTest {
@@ -247,7 +247,8 @@ class UpdateSeparationTest {
         Parser parser = new Parser(System.in);
         SimpleNode tree = parser.Input();
         Formula phiFormula = tree.fromSimpleNodeToFormula();
-        Formula phiConverted = convert(phiFormula);
+        FormulaConverter c = new FormulaConverter();
+        Formula phiConverted = c.convert(phiFormula);
         assertEquals(sep, phiConverted.isSeparated());
     }
 

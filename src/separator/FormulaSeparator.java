@@ -5,7 +5,7 @@ import java.util.*;
 import static formula.AtomConstant.*;
 import static formula.BooleanRules.*;
 import static formula.Operator.*;
-import static separator.EliminationRules.*;
+import static separator.FormulaEliminator.*;
 import static separator.Lemmas.*;
 import static separator.OperatorChain.getBorderNodes;
 
@@ -22,7 +22,7 @@ public class FormulaSeparator {
         if(f.getParent() == null && f != root) setRoot(f);
     }
 
-    private static boolean needsNormalization(Formula f) {
+    private boolean needsNormalization(Formula f) {
         Queue<Formula> q = new LinkedList<>();
         q.add(f);
         while(!q.isEmpty()) {
@@ -57,7 +57,7 @@ public class FormulaSeparator {
 
 
 
-    private static Formula applyNormalizations(Formula f) {
+    private Formula applyNormalizations(Formula f) {
         Queue<Formula> q = new LinkedList<>();
         q.add(f);
         while(!q.isEmpty()) {
@@ -69,12 +69,12 @@ public class FormulaSeparator {
                         UnaryFormula unf = (UnaryFormula) onf;
                         if(needsInvolution(unf)) {
                             nf = unf.replaceFormula(involution(unf));
-                            f = updateF(f, nf);
+                            updateRoot(nf);
                             q.add(nf);
                         }
                         if(needsDeMorganLaw(unf)) {
                             nf = unf.replaceFormula(deMorganLaw(unf));
-                            f = updateF(f, nf);
+                            updateRoot(nf);
                             q.add(nf);
                         }
                         break;
@@ -89,7 +89,7 @@ public class FormulaSeparator {
                         BinaryFormula bnf = (BinaryFormula) onf;
                         if(needsDistributiveLaw(bnf)) {
                             nf = bnf.replaceFormula(distributiveLaw(bnf));
-                            f = updateF(f, nf);
+                            updateRoot(nf);
                             q.add(nf);
                         }
                         else {
@@ -104,7 +104,7 @@ public class FormulaSeparator {
         return f;
     }
 
-    public static Formula normalize(Formula f) {
+    public Formula normalize(Formula f) {
         while (needsNormalization(f)) {
         //int i = 1;
         //while(i != 0) {
@@ -116,7 +116,7 @@ public class FormulaSeparator {
 
 
     /** @return Returns the matrix representing the formula f got in input */
-    public static PureFormulaeMatrix getPureFormulaeMatrix(Formula f) {
+    public PureFormulaeMatrix getPureFormulaeMatrix(Formula f) {
         PureFormulaeMatrix matrix = new PureFormulaeMatrix();
 
         ArrayList<Formula> conjunctions = getConjunctions(f);
@@ -148,7 +148,7 @@ public class FormulaSeparator {
      * - f is in DNF form;
      * - or is a pure formula;
      * - or a conjunction of pure formulas; */
-    private static ArrayList<Formula> getConjunctions(Formula f) {
+    private ArrayList<Formula> getConjunctions(Formula f) {
         ArrayList<Formula> cnjs = new ArrayList<>();
         if(f.isOperator(OR)) cnjs = getBorderNodes((BinaryFormula) f);
         else cnjs.add(f);
@@ -156,7 +156,7 @@ public class FormulaSeparator {
     }
 
     /*pre: f is atomic or binary */
-    private static ArrayList<Formula> getPureFormulae(Formula f) {
+    private ArrayList<Formula> getPureFormulae(Formula f) {
         ArrayList<Formula> pureFms = new ArrayList<>();
         if(f.isOperator(AND)) pureFms = getBorderNodes((BinaryFormula) f);
         else pureFms.add(f);
@@ -167,25 +167,27 @@ public class FormulaSeparator {
     /** Separates the formula f got in input, which means that extracts the nested occurrences of U inside S and viceversa.
      * @return A Formula which is a combination of pure past, pure present and pure future formulas
      * @param f the formula which needs to be separated */
-    public static Formula separate(Formula f) {
+    public Formula separate(Formula f) {
 
-        Formula nf = f;
+        root = f;
+        Formula nf = root;
 
         /* while the formula is not separated */
-        while(!f.isSeparated()) {
+        while(!root.isSeparated()) {
 
         //int i = 0;
         //while(i != 0) {
 
             //i--;
             /* search a node x that could be eliminated */
-            BinaryFormula x = searchX(f);
+            BinaryFormula x = searchX(root);
 
             /* the node x is never null because if the formula is not separated then
              * must exist a subformula which could be eliminated */
             assert x != null;
 
             /* candidate nodes to be the y of a junction in the left subtree of x */
+
             ArrayList<OperatorFormula> lys = x.getLoperand().searchOperators(
                     x.getOperator().getMirrorOperator()
             );
@@ -198,7 +200,7 @@ public class FormulaSeparator {
             /* if it is possible apply on x some elimination
              * an update if needed the resulting formula */
             if(isEliminable(x)) {
-                f = updateF(f, x.replaceFormula(applyElimination(x)));
+                updateRoot(x.replaceFormula(applyElimination(x)));
             }
 
             /* if is not applicable any elimination rule then
@@ -210,7 +212,7 @@ public class FormulaSeparator {
                         switch (rys.size()) {
                             case 0: break; // no ys in right subtree
                             default: {
-                                f = updateF(f, subtreeJunctionOperations(x, rys));
+                                updateRoot(subtreeJunctionOperations(x, rys));
                                 break;
                             }
                         }
@@ -219,13 +221,13 @@ public class FormulaSeparator {
                     default: {
                         switch (rys.size()) {
                             case 0: { // no ys in right subtree
-                                f = updateF(f, subtreeJunctionOperations(x, lys));
+                                updateRoot(subtreeJunctionOperations(x, lys));
                                 break;
                             }
                             default: {
                                 nf = subtreeJunctionOperations(x, lys);
-                                if(nf == f) nf = subtreeJunctionOperations(x, rys);
-                                f = updateF(f, nf);
+                                if(nf == root) nf = subtreeJunctionOperations(x, rys);
+                                updateRoot(nf);
                                 break;
                             }
                         }
@@ -234,15 +236,10 @@ public class FormulaSeparator {
                 }
             }
         }
-        return f;
+        return root;
     }
 
-    private static Formula updateF(Formula f, Formula nf) {
-        if(nf.getParent() == null && nf != f) return nf;
-        return f;
-    }
-
-    public static Formula subtreeJunctionOperations(BinaryFormula x, ArrayList<OperatorFormula> ys) {
+    public Formula subtreeJunctionOperations(BinaryFormula x, ArrayList<OperatorFormula> ys) {
         /* create a list with all the junctions from x to the ys contained in js */
         ArrayList<JunctionPath> js = new ArrayList<>();
         ys.forEach(y -> js.add(new JunctionPath(x, (BinaryFormula) y)));
@@ -290,14 +287,14 @@ public class FormulaSeparator {
 
 
     /** Returns the first find junction to be arranged */
-    public static JunctionPath getJunctionToArrange(ArrayList<JunctionPath> js) {
+    public JunctionPath getJunctionToArrange(ArrayList<JunctionPath> js) {
         for (JunctionPath j : js) if(j.needsArrangement()) return j;
         return null;
     }
 
     /** Returns true if, and only if, all the junctions inside the passed
       * array list are arranged */
-    public static boolean areArranged(ArrayList<JunctionPath> js) {
+    public boolean areArranged(ArrayList<JunctionPath> js) {
         boolean b = true;
         for (JunctionPath j : js) {
             if(!j.isArranged()) b = false;
@@ -308,7 +305,7 @@ public class FormulaSeparator {
 
 
     // pre: j1, j2 are operator chains both setupped
-    private static Formula underOneConjunction(BinaryFormula f1, BinaryFormula f2) {
+    private Formula underOneConjunction(BinaryFormula f1, BinaryFormula f2) {
 
 
         OperatorFormula y1 = f1; // set y1 by default to f1
@@ -343,7 +340,7 @@ public class FormulaSeparator {
     }
 
 
-    private static BinaryFormula swapFirstWithBrotherOfSecond(Formula f1, Formula f2) {
+    private BinaryFormula swapFirstWithBrotherOfSecond(Formula f1, Formula f2) {
 
         BinaryFormula and1 = (BinaryFormula) f1.getParent();
         BinaryFormula and2 = (BinaryFormula) f2.getParent();
@@ -387,7 +384,7 @@ public class FormulaSeparator {
     }
 
 
-    public static Formula unify(BinaryFormula f) {
+    public Formula unify(BinaryFormula f) {
 
         OperatorFormula lc = (OperatorFormula) f.getLoperand();
         OperatorFormula rc = (OperatorFormula) f.getRoperand();
@@ -535,7 +532,7 @@ public class FormulaSeparator {
         return null;
     }
 
-    private static boolean existTwoSameFormulas(OperatorFormula x) {
+    private boolean existTwoSameFormulas(OperatorFormula x) {
         ArrayList<OperatorFormula> al = x.searchOperators(x.getOperator().getMirrorOperator());
         boolean b = false;
         for (OperatorFormula y : al) {
@@ -545,7 +542,7 @@ public class FormulaSeparator {
     }
 
 
-    public static boolean isEliminable(BinaryFormula x) {
+    public boolean isEliminable(BinaryFormula x) {
 
         /* candidate nodes to be the y of a junction in the left subtree of x */
         ArrayList<OperatorFormula> lys = x.getLoperand().searchOperators(
@@ -607,7 +604,7 @@ public class FormulaSeparator {
     }
 
 
-    public static Formula applyElimination(BinaryFormula f) {
+    public Formula applyElimination(BinaryFormula f) {
 
         if(!(f.getOperator().equals(SINCE) || f.getOperator().equals(UNTIL))){
             throw new IllegalArgumentException(
@@ -624,42 +621,58 @@ public class FormulaSeparator {
             case 1 -> {
                 sfms = subformulas1(f);
                 System.out.println("Elimination1");
-                return elimination1(sfms, f.getOperator());
+                return elimination1(
+                        sfms, f.getOperator()
+                );
             }
             case 2 -> {
                 sfms = subformulas2(f);
                 System.out.println("Elimination2");
-                return elimination2(sfms, f.getOperator());
+                return elimination2(
+                        sfms, f.getOperator()
+                );
             }
             case 3 -> {
                 sfms = subformulas3(f);
                 System.out.println("Elimination3");
-                return elimination3(sfms, f.getOperator());
+                return elimination3(
+                        sfms, f.getOperator()
+                );
             }
             case 4 -> {
                 sfms = subformulas4(f);
                 System.out.println("Elimination4");
-                return elimination4(sfms, f.getOperator());
+                return elimination4(
+                        sfms, f.getOperator()
+                );
             }
             case 5 -> {
                 sfms = subformulas57(f);
                 System.out.println("Elimination5");
-                return elimination5(sfms, f.getOperator());
+                return elimination5(
+                        sfms, f.getOperator()
+                );
             }
             case 6 -> {
                 sfms = subformulas6(f);
                 System.out.println("Elimination6");
-                return elimination6(sfms, f.getOperator());
+                return elimination6(
+                        sfms, f.getOperator()
+                );
             }
             case 7 -> {
                 sfms = subformulas57(f);
                 System.out.println("Elimination7");
-                return elimination7(sfms, f.getOperator());
+                return elimination7(
+                        sfms, f.getOperator()
+                );
             }
             case 8 -> {
                 sfms = subformulas8(f);
                 System.out.println("Elimination8");
-                return elimination8(sfms, f.getOperator());
+                return elimination8(
+                        sfms, f.getOperator()
+                );
             }
             default -> { return f; }
         }
@@ -667,7 +680,7 @@ public class FormulaSeparator {
 
     /** @return Returns the number of the nesting case of the formula.
      * If the formula does not correspond to any nesting case of the eliminations returns 0 */
-    public static int nestingCase(BinaryFormula f) {
+    public int nestingCase(BinaryFormula f) {
         Operator fOp = f.getOperator();
         if(fOp == SINCE || fOp == UNTIL) {
             int lsc = leftSubtreeCase(f);
@@ -735,7 +748,7 @@ public class FormulaSeparator {
      * @return Returns 1 if the left child of the formula is of the form: (a&(AUB))Sq
      * Returns 2 if the left child of the formula is of the form: (a&!(AUB))Sq
      * Returns 0 elsewhere */
-    private static int leftSubtreeCase(BinaryFormula f) {
+    private int leftSubtreeCase(BinaryFormula f) {
         int n = 0;
         Operator fOp = f.getOperator(); // the top operator of the formula f
         Formula x = f.getLoperand(); // the left operand of the formula f
@@ -776,7 +789,7 @@ public class FormulaSeparator {
      * @return Returns 1 if the right child of the formula is of the form: (a|(AUB))Sq
      * Returns 2 if the right child of the formula is of the form: (a|!(AUB))Sq
      * Returns 0 elsewhere */
-    private static int rightSubtreeCase(BinaryFormula f) {
+    private int rightSubtreeCase(BinaryFormula f) {
         int n = 0;
         Operator fOp = f.getOperator();
         Formula x = f.getRoperand();
@@ -814,7 +827,7 @@ public class FormulaSeparator {
 
     /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination1 */
     // pre: f.getOperator() == SINCE/UNTIL
-    public static ArrayList<Formula> subformulas1(BinaryFormula f){
+    public ArrayList<Formula> subformulas1(BinaryFormula f){
         ArrayList<Formula> al= new ArrayList<>();
 
         BinaryFormula lAnd =  (BinaryFormula) f.getLoperand();
@@ -833,7 +846,7 @@ public class FormulaSeparator {
 
     /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination2 */
     // pre: f.getOperator() == SINCE/UNTIL
-    public static ArrayList<Formula> subformulas2(BinaryFormula f){
+    public ArrayList<Formula> subformulas2(BinaryFormula f){
         ArrayList<Formula> al= new ArrayList<>();
 
         BinaryFormula lAnd =  (BinaryFormula) f.getLoperand();
@@ -853,7 +866,7 @@ public class FormulaSeparator {
 
     /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination3 */
     // pre: f.getOperator() == SINCE/UNTIL
-    public static ArrayList<Formula> subformulas3(BinaryFormula f){
+    public ArrayList<Formula> subformulas3(BinaryFormula f){
         ArrayList<Formula> al= new ArrayList<>();
 
         Formula a = f.getLoperand();
@@ -872,7 +885,7 @@ public class FormulaSeparator {
 
     /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination4 */
     // pre: f.getOperator() == SINCE/UNTIL
-    public static ArrayList<Formula> subformulas4(BinaryFormula f){
+    public ArrayList<Formula> subformulas4(BinaryFormula f){
         ArrayList<Formula> al= new ArrayList<>();
 
         Formula a = f.getLoperand();
@@ -894,7 +907,7 @@ public class FormulaSeparator {
     /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination5
      * and Elimination7 */
     // pre: f.getOperator() == SINCE/UNTIL
-    public static ArrayList<Formula> subformulas57(BinaryFormula f){
+    public ArrayList<Formula> subformulas57(BinaryFormula f){
         ArrayList<Formula> al= new ArrayList<>();
         BinaryFormula lAnd =  (BinaryFormula) f.getLoperand();
         Formula a = lAnd.getLoperand();
@@ -913,7 +926,7 @@ public class FormulaSeparator {
 
     /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination6 */
     // pre: f.getOperator() == SINCE/UNTIL
-    public static ArrayList<Formula> subformulas6(BinaryFormula f) {
+    public ArrayList<Formula> subformulas6(BinaryFormula f) {
         ArrayList<Formula> al= new ArrayList<>();
 
         BinaryFormula lAnd = (BinaryFormula) f.getLoperand();
@@ -933,7 +946,7 @@ public class FormulaSeparator {
 
     /** @return Returns the array list of the subformulas which will be used in the Elimination8 */
     // pre: f.getOperator() == SINCE/UNTIL
-    public static ArrayList<Formula> subformulas8(BinaryFormula f){
+    public ArrayList<Formula> subformulas8(BinaryFormula f){
         ArrayList<Formula> al= new ArrayList<>();
 
         BinaryFormula lAnd =  (BinaryFormula) f.getLoperand();

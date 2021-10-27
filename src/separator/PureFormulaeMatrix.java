@@ -7,12 +7,12 @@ import static formula.AtomConstant.TRUE;
 
 public class PureFormulaeMatrix {
 
-    ArrayList<Formula[]> m;
+    ArrayList<Formula[]> matrix;
 
-    public PureFormulaeMatrix() { m = new ArrayList<>(); }
+    public PureFormulaeMatrix() { matrix = new ArrayList<>(); }
 
     public void addTriple(Formula f_past, Formula f_present, Formula f_future) {
-        m.add( new Formula[] {f_past, f_present, f_future} );
+        matrix.add( new Formula[] {f_past, f_present, f_future} );
     }
 
     public void addPureTriple(Formula f) {
@@ -55,8 +55,8 @@ public class PureFormulaeMatrix {
 
     public String toString() {
         StringBuilder str = new StringBuilder();
-        for ( Formula[] v : m) {
-            if(v != m.get(0)) str.append(",\n");
+        for ( Formula[] v : matrix) {
+            if(v != matrix.get(0)) str.append(",\n");
             str.append(String.format(" [\"%s\", \"%s\", \"%s\"]", v[0], v[1], v[2]));
 
         }

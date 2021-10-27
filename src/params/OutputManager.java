@@ -11,15 +11,15 @@ public class OutputManager {
 
     public static void graphVizOutput(GraphViz gv, String file, String encoding) {
         gv.increaseDpi();   // 106 dpi
-        String repesentationType= "dot";
+        String representationType= "dot";
         File out = new File( file + encoding);
-        gv.writeGraphToFile(gv.getGraph(gv.getDotSource(), encoding, repesentationType), out);
+        gv.writeGraphToFile(gv.getGraph(gv.getDotSource(), encoding, representationType), out);
         System.out.println("Tree representation saved in " + file + encoding);
     }
 
     public static void textOutput(String file, Formula f) {
         String str = f.toString();
-        File out = new File( file + OutputEncoding.txt);
+        File out = new File( file + ".txt");
     }
 
     public static void dfaOutput(String matrix) throws IOException {
@@ -29,7 +29,7 @@ public class OutputManager {
         final String script = "\\LTLf2DFAcall.py";
 
         String[] cmd = {
-                "python",
+                "python3",
                 dir + script,
                 String.format("\" %s \"", matrix)
         };

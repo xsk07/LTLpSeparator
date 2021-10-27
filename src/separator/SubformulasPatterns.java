@@ -5,10 +5,11 @@ import formula.Formula;
 import formula.Operator;
 import java.util.ArrayList;
 import static formula.Operator.*;
-import static separator.EliminationRules.new_b0;
-import static separator.EliminationRules.new_c;
+import static separator.FormulaEliminator.new_b0;
+import static separator.FormulaEliminator.new_c;
 
 public abstract class SubformulasPatterns {
+
 
     /** @return Returns a newly created formula of the form: aSq
      * @param fms the ArrayList of the subformulas needed by the elimination rules.

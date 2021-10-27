@@ -6,7 +6,7 @@ import formula.Operator;
 
 import static formula.Operator.*;
 
-public class Lemmas {
+public abstract class Lemmas {
 
 
     /** LEMMA A.1

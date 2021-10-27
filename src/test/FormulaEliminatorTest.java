@@ -7,15 +7,14 @@ import org.junit.jupiter.api.Test;
 import parser.ParseException;
 import parser.Parser;
 import parser.SimpleNode;
-import separator.FormulaEliminator;
 import separator.FormulaSeparator;
-
 import java.io.ByteArrayInputStream;
 import static org.junit.jupiter.api.Assertions.*;
 
-class EliminationRulesTest {
 
-    private static FormulaSeparator separator = new FormulaSeparator();
+class FormulaEliminatorTest {
+
+    private FormulaSeparator separator = new FormulaSeparator();
 
     @Test
     @DisplayName("Elimination1")

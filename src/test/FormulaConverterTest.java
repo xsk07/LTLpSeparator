@@ -1,9 +1,9 @@
 package test;
 
+import converter.FormulaConverter;
 import formula.Formula;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import static converter.FormulaConverter.convert;
 import static org.junit.jupiter.api.Assertions.*;
 import parser.ParseException;
 import parser.Parser;
@@ -121,7 +121,8 @@ class FormulaConverterTest {
         Parser parser = new Parser(System.in);
         SimpleNode tree = parser.Input();
         Formula templateFormula = tree.fromSimpleNodeToFormula();
-        Formula templateConverted = convert(templateFormula);
+        FormulaConverter c = new FormulaConverter();
+        Formula templateConverted = c.convert(templateFormula);
         assertEquals(templateConverted.toString(), result);
     }
 

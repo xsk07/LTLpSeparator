@@ -15,6 +15,8 @@ import static separator.FormulaSeparator.*;
 
 class SubformulasTest {
 
+    private FormulaSeparator separator = new FormulaSeparator();
+
     @Test
     @DisplayName("NestingCaseSinceCode")
     void nestingCaseSinceCode() throws ParseException, IllegalArgumentException {
@@ -48,7 +50,7 @@ class SubformulasTest {
         Parser parser = new Parser(System.in);
         SimpleNode tree = parser.Input();
         BinaryFormula templateFormula = (BinaryFormula) tree.fromSimpleNodeToFormula();
-        int code = FormulaSeparator.nestingCase(templateFormula);
+        int code = separator.nestingCase(templateFormula);
         assertEquals(code, c);
     }
 
@@ -156,26 +158,26 @@ class SubformulasTest {
         ArrayList<Formula> al = new ArrayList<>();
         switch (c){
             case 1:
-                al = subformulas1(treeFormula);
+                al = separator.subformulas1(treeFormula);
                 break;
             case 2:
-                al = subformulas2(treeFormula);
+                al = separator.subformulas2(treeFormula);
                 break;
             case 3:
-                al = subformulas3(treeFormula);
+                al = separator.subformulas3(treeFormula);
                 break;
             case 4:
-                al = subformulas4(treeFormula);
+                al = separator.subformulas4(treeFormula);
                 break;
             case 6:
-                al = subformulas6(treeFormula);
+                al = separator.subformulas6(treeFormula);
                 break;
             case 5:
             case 7:
-                al = subformulas57(treeFormula);
+                al = separator.subformulas57(treeFormula);
                 break;
             case 8:
-                al = subformulas8(treeFormula);
+                al = separator.subformulas8(treeFormula);
                 break;
             default: break;
         }

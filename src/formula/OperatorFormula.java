@@ -46,13 +46,12 @@ public abstract class OperatorFormula extends Formula {
         OperatorFormula p = f.getParent();
         while (p != null && !p.equals(this)) {
             p = p.getParent();
-
         }
         return (p != null && p.equals(this));
     }
 
     /** @return Returns the image of the top operator of the formula */
-    public String getImage(){ return this.operator.getImage(); }
+    public String getImage(){ return operator.getImage(); }
 
     protected abstract void updateTime(Formula f);
 

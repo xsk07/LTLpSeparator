@@ -2,8 +2,6 @@ package formula;
 
 import static formula.AtomConstant.*;
 import static formula.Operator.*;
-import static separator.OperatorChain.operatorChainSearch;
-import static separator.OperatorChain.operatorChainSearchOfNegation;
 
 public abstract class BooleanRules {
 

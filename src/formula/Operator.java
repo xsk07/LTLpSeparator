@@ -5,24 +5,25 @@ import static formula.TimeConstant.*;
 /** The Operator class represents the entire set of operators */
 public enum Operator {
 
-    NOT (PRESENT,"!", 1),
-    AND (PRESENT,"&", 2),
-    OR (PRESENT,"|", 2),
-    IMPL (PRESENT,"->", 2),
-    EQUIV (PRESENT,"<->", 2),
-    UNTIL (FUTURE,"U", 2),
-    SINCE (PAST,"S", 2),
-    UNLESS (FUTURE,"W", 2),
-    ONCE (PAST,"O", 1),
-    HIST (PAST,"H", 1),
-    YEST (PAST,"Y", 1),
-    FIN (FUTURE,"F", 1),
-    GLOB (FUTURE,"G", 1),
-    NEXT (FUTURE,"X", 1);
+    NOT (PRESENT,"!", 1, false),
+    AND (PRESENT,"&", 2, false),
+    OR (PRESENT,"|", 2, false),
+    IMPL (PRESENT,"->", 2, true),
+    EQUIV (PRESENT,"<->", 2, true),
+    UNTIL (FUTURE,"U", 2, false),
+    SINCE (PAST,"S", 2, false),
+    UNLESS (FUTURE,"W", 2, true),
+    ONCE (PAST,"O", 1, true),
+    HIST (PAST,"H", 1, true),
+    YEST (PAST,"Y", 1, true),
+    FIN (FUTURE,"F", 1, true),
+    GLOB (FUTURE,"G", 1, true),
+    NEXT (FUTURE,"X", 1, true);
 
     private final TimeConstant time;
     private final int arity;
     private final String image;
+    private final boolean derived;
     private Operator mirrorOperator;
 
     static {
@@ -44,22 +45,28 @@ public enum Operator {
 
     }
 
-    Operator(TimeConstant t, String img, int n) {
+    Operator(TimeConstant t, String img, int n, boolean b) {
         this.time = t;
         this.image = img;
         this.arity = n;
+        this.derived = b;
     }
 
+    /** @return Returns the time of the operator */
     public TimeConstant getTime(){ return time; }
 
     /** @return Returns true if, and only if, is a past operator */
-    public boolean isPast(){return time == PAST;}
+    public boolean isPast(){ return time == PAST; }
 
     /** @return Returns true if, and only if, is a present operator */
-    public boolean isPresent(){return time == PRESENT;}
+    public boolean isPresent(){ return time == PRESENT; }
 
     /** @return Returns true if, and only if, is a past operator */
-    public boolean isFuture(){return time == FUTURE;}
+    public boolean isFuture(){ return time == FUTURE; }
+
+    /** @return Returns true if, and only if, it is a temporal operator i.e.
+      * when is a past or a future operator */
+    public boolean isTemporal(){ return (this.isPast() || this.isFuture()); }
 
     /** @return Returns the arity of the operator */
     public int getArity() { return arity; }
@@ -70,8 +77,13 @@ public enum Operator {
     /** @return Returns true if, and only if, it is a binary operator */
     public boolean isBinary() {return arity == 2; }
 
+    /** @return Returns true if, and only if, it is derivated from
+      * the basic operators */
+    public boolean isDerived() { return derived; }
+
     /** @return Returns the image of the operator */
     public String getImage() { return image; }
+
 
     /** @return Returns true if, and only if, has a mirror operator */
     public boolean hasMirrorOperator(){ return mirrorOperator != null; }
@@ -79,7 +91,7 @@ public enum Operator {
     /** @return Returns the mirror operator */
     public Operator getMirrorOperator() {
         if(hasMirrorOperator()) return mirrorOperator;
-        else return null; // should throw an exception !!!
+        return null;
     }
 
     @Override

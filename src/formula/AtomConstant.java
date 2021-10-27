@@ -7,9 +7,9 @@ public enum AtomConstant {
 
     private final String image;
 
-    AtomConstant(String img) { this.image = img; }
+    AtomConstant(String img) { image = img; }
 
     /** @return Returns the image of the atom constant */
-    public String getImage() { return this.image; }
+    public String getImage() { return image; }
 
 }

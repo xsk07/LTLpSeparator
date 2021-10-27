@@ -22,7 +22,7 @@ public class OptionsManager {
 
         Option s= Option.builder("s")
                 .longOpt("separate")
-                .desc("separates the formula into a triple of pure past, pure present and pure future ones")
+                .desc("separates the formula into triples of pure past, pure present and pure future automatons")
                 .build();
 
         OptionGroup og = new OptionGroup();
