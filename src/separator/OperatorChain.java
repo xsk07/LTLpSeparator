@@ -1,6 +1,8 @@
 package separator;
 
 import formula.*;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -150,8 +152,8 @@ public abstract class OperatorChain {
 
     }
 
-    public static FormulaeList getBorderNodes(BinaryFormula f) {
-        FormulaeList al = new FormulaeList();
+    public static ArrayList<Formula> getBorderNodes(BinaryFormula f) {
+        ArrayList<Formula> al = new ArrayList<>();
         Queue<BinaryFormula> q = new LinkedList<>();
         q.add(f);
         while(!q.isEmpty()) {

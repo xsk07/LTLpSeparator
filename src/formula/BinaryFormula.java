@@ -2,8 +2,7 @@ package formula;
 
 import java.util.Collection;
 import java.util.Iterator;
-import static formula.Operator.AND;
-import static formula.Operator.OR;
+import static formula.Operator.*;
 import static formula.TimeConstant.*;
 
 /** The BinaryFormula class represents an LTL formula which the root operator is of arity two (binary).
@@ -122,38 +121,24 @@ public class BinaryFormula extends OperatorFormula {
     }
 
     @Override
-    public String toString(){
-        String str = "";
+    public String toString() {
 
-        // left operand string
-        if(loperand.isAtomic()) str += loperand.toString(); // if the left operand is an atom
-        else {
-            if(loperand.isOperator()) { // if the left operand is an operator then
-                OperatorFormula loperandF = (OperatorFormula) loperand;
-                if(loperandF.isUnary() || loperandF.getOperator() == this.getOperator()) {
-                    str += loperand.toString();
-                }
-                else str += "(" + loperand.toString() + ")"; // if is a binary formula add the parentheses
-            }
-            else str += "(" + loperand.toString() + ")";
+        String leftChild = this.getLoperand().toString();
+        String rightChild = this.getRoperand().toString();
+        if(this.getLoperand().isOperator()) {
+            leftChild = String.format("(%s)", this.getLoperand().toString());
+        }
+        if(this.getRoperand().isOperator()) {
+            rightChild = String.format("(%s)", this.getRoperand().toString());
         }
 
-        // operator string
-        str += super.getOperator().getImage();
-
-        // right operand string
-        if(roperand.isAtomic()) str += roperand.toString();
-        else {
-            if(roperand.isOperator()) {
-                OperatorFormula roperandF = (OperatorFormula) roperand;
-                if(roperandF.isUnary() || roperandF.getOperator() == this.getOperator()) {
-                    str += roperand.toString();
-                }
-                else str += "(" + roperand.toString() + ")";
-            }
-            else str += "(" + roperand.toString() + ")";
+        if(this.isOperator(UNTIL) || this.isOperator(SINCE)) {
+            String swapString = leftChild;
+            leftChild = rightChild;
+            rightChild = swapString;
         }
-        return str;
+
+        return String.format("%s %s %s", leftChild, this.getOperator(), rightChild);
     }
 
     @Override
@@ -189,7 +174,7 @@ public class BinaryFormula extends OperatorFormula {
     }
 
     public boolean isNestedInsideMirror(){
-        if(this.isOperator(Operator.UNTIL) || this.isOperator(Operator.SINCE)){
+        if(this.isOperator(UNTIL) || this.isOperator(Operator.SINCE)){
             Formula nf = this;
             while(nf!= null && !nf.isOperator(this.getOperator().getMirrorOperator())){
                 nf = nf.getParent();

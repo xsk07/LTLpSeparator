@@ -14,16 +14,15 @@ import static params.InputManager.readFile;
 import static params.OptionsManager.initializeOptions;
 import static params.OutputManager.graphVizOutput;
 
-
 public class Main {
 
     private static final int DEFAULT_PROMPT_WIDTH = 160;
     private static final String DEFAULT_ENCODING = "png";
     private static final InputStream DEFAULT_INPUT_SOURCE = System.in;
     private static final String DEFAULT_OUTPUT_FILENAME = "dout/out.";
-    private static FormulaConverter converter = new FormulaConverter();
-    private static FormulaSeparator separator = new FormulaSeparator();
-
+    private static final FormulaConverter converter = new FormulaConverter();
+    private static final FormulaSeparator separator = new FormulaSeparator();
+    private static final Parser parser = new Parser(DEFAULT_INPUT_SOURCE);
 
     public static void main(String[] args) throws ParseException, IllegalArgumentException {
 
@@ -56,14 +55,14 @@ public class Main {
                 outputEncoding = cmd.getOptionValue("oE");
             }
             if(cmd.hasOption("t")){
-                Parser parser = new Parser(inputSource);
+                parser.ReInit(inputSource);
                 SimpleNode tree = parser.Input();
                 Formula phi = tree.fromSimpleNodeToFormula();
                 GraphViz gv = phi.fromFormulaToGraphViz();
                 graphVizOutput(gv, outFile, outputEncoding);
             }
             if(cmd.hasOption("s")) {
-                Parser parser = new Parser(inputSource);
+                parser.ReInit(inputSource);
                 SimpleNode tree = parser.Input();
                 Formula phi = tree.fromSimpleNodeToFormula();
                 Formula phic = converter.convert(phi);
@@ -81,11 +80,10 @@ public class Main {
                 graphVizOutput(gv, outFile, outputEncoding);
             }
             if(cmd.hasOption("c")) {
-                Parser parser = new Parser(inputSource);
+                parser.ReInit(inputSource);
                 SimpleNode tree = parser.Input();
                 Formula phi = tree.fromSimpleNodeToFormula();
-                FormulaConverter c = new FormulaConverter();
-                Formula phic = c.convert(phi);
+                Formula phic = converter.convert(phi);
                 GraphViz gv = phic.fromFormulaToGraphViz();
                 graphVizOutput(gv, outFile, outputEncoding);
             }

@@ -62,7 +62,6 @@ public abstract class ConversionRules {
         );
     }
 
-
     /** Applies the equivalence rule of the Next operator.
      *  Rewriting rule: Xq =>* U(q, false)
      *  @param f An UnaryFormula
@@ -76,7 +75,6 @@ public abstract class ConversionRules {
                 )
         );
     }
-
 
     /** Applies the equivalence rule of the Globally operator.
      *  Rewriting rule: Gq =>* !U(!q, true)
@@ -120,7 +118,6 @@ public abstract class ConversionRules {
         );
     }
 
-
     /** Subroutine used by methods: ruleO, ruleY, ruleF, ruleX.
      *  @see #ruleO(UnaryFormula)
      *  @see #ruleY(UnaryFormula)
@@ -134,6 +131,7 @@ public abstract class ConversionRules {
         );
 
     }
+
     /** Subroutine used by methods: ruleH, ruleG.
      *  @see #ruleH(UnaryFormula)
      *  @see #ruleG(UnaryFormula) */

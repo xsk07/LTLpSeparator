@@ -3,6 +3,7 @@ package separator;
 import formula.BinaryFormula;
 import formula.Formula;
 import formula.Operator;
+import java.util.Arrays;
 import static formula.Operator.*;
 
 public abstract class Lemmas {
@@ -10,8 +11,8 @@ public abstract class Lemmas {
     /** LEMMA A.1
       * U(A,B) & U(C,D) =>* E = E1 | E2 | E3
       * E1 = U(A&C, B&D)
-      * E2 = (A&D&(CUD))U(B&D)
-      * E3 = ((C&B&(AUB))U(B&D)) */
+      * E2 = U(A & D & U(C,D), B&D)
+      * E3 = U(C & B & U(A,B), B&D) */
     public static BinaryFormula lemmaA1(BinaryFormula f) {
 
         if(!(f.getOperator().equals(AND) | f.getOperator().equals(OR)) ) {
@@ -35,97 +36,82 @@ public abstract class Lemmas {
                 rc.getRoperand()  // D
         };
 
-        return new BinaryFormula(
-                OR,
-                // ((A&C)U(B&D)) | ((A&D&(CUD))U(B&D))
-                new BinaryFormula(
-                        OR, // |
-                        lemmaA1_E1(fms, op), // (A&C)U(B&D)
-                        lemmaA1_E2(fms, op)  // (A&D&(CUD))U(B&D)
-                ),
-                lemmaA1_E3(fms, op) // (C&B&(AUB))U(B&D)
+        return BinaryFormula.newDisjunction(Arrays.asList(
+                lemmaA1_E1(fms, op), // U(A&C, B&D)
+                lemmaA1_E2(fms, op), // U(A & D & U(C,D), B&D)
+                lemmaA1_E3(fms, op)  // U(C & B & U(A,B), B&D)
+            )
         );
     }
 
-    /** E1 = (A&C)U(B&D) */
+    /** E1 = U(A&C, B&D) */
     private static BinaryFormula lemmaA1_E1(Formula[] fms, Operator op){
-
-        // (A&C)U(B&D)
+        /// U(A&C, B&D)
         return new BinaryFormula(
                 op,  // U
                 // A&C
                 new BinaryFormula(
                         AND, // &
                         fms[0].deepCopy(), // A
-                        fms[2].deepCopy() // C
+                        fms[2].deepCopy()  // C
                 ),
                 // B&D
                 new BinaryFormula(
                         AND, // &
                         fms[1].deepCopy(), // B
-                        fms[3].deepCopy() // D
+                        fms[3].deepCopy()  // D
                 )
         );
     }
 
-    /** E2 = (A&D&(CUD))U(B&D) */
+    /** E2 = U(A & D & U(C,D), B&D) */
     private static BinaryFormula lemmaA1_E2(Formula[] fms, Operator op){
-
-        // (A&D&(CUD))U(B&D)
+        // U(A & D & U(C,D), B&D)
         return new BinaryFormula(
                 op, // U
-                // A&D&(CUD)
-                new BinaryFormula(
-                        AND, // &
-                        // A&D
-                        new BinaryFormula(
-                                AND, // &
-                                fms[0].deepCopy(), // A
-                                fms[3].deepCopy() // D
-                        ),
-                        // CUD
+                // A & D & U(C,D)
+                BinaryFormula.newConjunction(Arrays.asList(
+                        fms[0].deepCopy(), // A
+                        fms[3].deepCopy(), // D
+                        // U(C,D)
                         new BinaryFormula(
                                 op, // U
                                 fms[2].deepCopy(), // C
-                                fms[3].deepCopy() // D
+                                fms[3].deepCopy()  // D
+                        )
+                    )
+                ),
+                // B&D
+                new BinaryFormula(
+                        AND, // &
+                        fms[1].deepCopy(), // B
+                        fms[3].deepCopy()  // D
+                )
+        );
+    }
+
+    /** E3 = U(C & B & U(A,B), B&D) */
+    private static BinaryFormula lemmaA1_E3(Formula[] fms, Operator op){
+        // U(C & B & U(A,B), B&D)
+        return new BinaryFormula(
+                op, // U
+                // U(C & B & U(A,B)
+                BinaryFormula.newConjunction(Arrays.asList(
+                                fms[2].deepCopy(), // C
+                                fms[1].deepCopy(), // B
+                                // U(A,B)
+                                new BinaryFormula(
+                                        op, // U
+                                        fms[0].deepCopy(), // A
+                                        fms[1].deepCopy()  // B
+                                )
                         )
                 ),
                 // B&D
                 new BinaryFormula(
                         AND, // &
                         fms[1].deepCopy(), // B
-                        fms[3].deepCopy() // D
-                )
-        );
-    }
-
-    /** E3 = ((C&B&(AUB))U(B&D)) */
-    private static BinaryFormula lemmaA1_E3(Formula[] fms, Operator op){
-
-        // (C&B&(AUB))U(B&D)
-        return new BinaryFormula(
-                op, // U
-                // C&B&(AUB)
-                new BinaryFormula(
-                        AND, // &
-                        // C&B
-                        new BinaryFormula(
-                                AND, // &
-                                fms[2].deepCopy(),  // C
-                                fms[1].deepCopy() // B
-                        ),
-                        // AUB
-                        new BinaryFormula(
-                                op, // U
-                                fms[0].deepCopy(), // A
-                                fms[1].deepCopy() // B
-                        )
-                ),
-                // B&D
-                new BinaryFormula(
-                        AND, // &
-                        fms[1], // B
-                        fms[3] // D
+                        fms[3].deepCopy()  // D
                 )
         );
     }

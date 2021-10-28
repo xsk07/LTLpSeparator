@@ -1,9 +1,6 @@
 package formula;
 
-/** The TypeConstant class represents the set of the types of the formulas,
- * which can be operator or atomic. */
+/** The TypeConstant class represents the types that formulas can assume */
 public enum TypeConstant {
-
     OPERATOR, ATOM
-
 }

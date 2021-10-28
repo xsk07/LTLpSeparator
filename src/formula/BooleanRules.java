@@ -33,8 +33,9 @@ public abstract class BooleanRules {
         return f;
     }
 
-    /** (A->B) =>* !A|B */
+    /** (A -> B) =>* !A | B */
     public static BinaryFormula implicationRule(BinaryFormula f) {
+        // !A | B
         return new BinaryFormula(
                 OR, // |
                 f.getLoperand().negate(), // !A
@@ -42,8 +43,9 @@ public abstract class BooleanRules {
         );
     }
 
-    /** (A<->B) =>* (A&B) | (!A&!B) */
+    /** (A <-> B) =>* (A & B) | (!A & !B) */
     public static BinaryFormula equivalenceRule(BinaryFormula f) {
+        // (A & B) | (!A & !B)
         return new BinaryFormula(
                 OR, // |
                 // A & B
@@ -56,7 +58,7 @@ public abstract class BooleanRules {
                 new BinaryFormula(
                         AND, // &
                         f.getLoperand().deepCopy().negate(), // !A
-                        f.getRoperand().deepCopy().negate() // B
+                        f.getRoperand().deepCopy().negate()  // !B
                 )
         );
     }
@@ -65,7 +67,7 @@ public abstract class BooleanRules {
         if(!f.isOperator(NOT)){
             throw new IllegalArgumentException(
                     String.format(
-                            "The operator of the formula should be a NOT but is %s",
+                            "The operator of the formula must be '!' but is '%s'",
                             f.getOperator().getImage()
                     )
             );
@@ -84,8 +86,8 @@ public abstract class BooleanRules {
         }
         throw new IllegalArgumentException(
                 String.format(
-                        "The operator of the formula should be a NOT but is %s",
-                        f.getImage()
+                        "The operator of the formula must be '!' but is '%s'",
+                        f.getOperator().getImage()
                 )
         );
 
@@ -95,7 +97,7 @@ public abstract class BooleanRules {
         if(!f.isOperator(NOT)){
             throw new IllegalArgumentException (
                     String.format(
-                            "The formula should start with a NOT operator but starts with %s",
+                            "The operator of the formula must be '!' but is '%s'",
                             f.getOperator().getImage()
                     )
             );
@@ -104,11 +106,10 @@ public abstract class BooleanRules {
     }
 
 
-    /** !(A&B) => !A|!B */
+    /** !(A & B) => !A | !B */
     public static Formula deMorganLaw(UnaryFormula f) {
 
         if(f.isOperator(NOT)) {
-
             if(f.getOperand().isOperator(OR) || f.getOperand().isOperator(AND)) {
                 BinaryFormula bf = (BinaryFormula) f.getOperand();
                 assert bf.getOperator().getMirrorOperator() != null;
@@ -123,7 +124,7 @@ public abstract class BooleanRules {
         }
         throw new IllegalArgumentException(
                 String.format(
-                        "The formula should start with a NOT operator but starts with %s",
+                        "The operator of the formula must be '!' but is '%s'",
                         f.getOperator().getImage()
                 )
         );

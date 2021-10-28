@@ -7,7 +7,6 @@ import java.util.Stack;
 import static formula.BooleanRules.*;
 import static converter.ConversionRules.*;
 
-
 public class FormulaConverter {
 
     private Formula root;

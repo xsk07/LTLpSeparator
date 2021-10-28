@@ -3,6 +3,7 @@ package separator;
 import formula.*;
 import java.util.*;
 import static formula.AtomConstant.*;
+import static formula.BinaryFormula.newConjunction;
 import static formula.BooleanRules.*;
 import static formula.Operator.*;
 import static separator.Direction.*;
@@ -121,9 +122,9 @@ public class FormulaSeparator {
 
         ArrayList<Formula> conjunctions = getConjunctions(f);
         for (Formula c : conjunctions) {
-            FormulaeList pastList = new FormulaeList();
-            FormulaeList presentList = new FormulaeList();
-            FormulaeList futureList = new FormulaeList();
+            ArrayList<Formula> pastList = new ArrayList<>();
+            ArrayList<Formula> presentList = new ArrayList<>();
+            ArrayList<Formula> futureList = new ArrayList<>();
 
             ArrayList<Formula> pureFormulas = getPureFormulae(c);
             for (Formula p : pureFormulas) {
@@ -134,9 +135,9 @@ public class FormulaSeparator {
                 }
             }
             matrix.addTriple(
-                    pastList.toConjunctionFormula(),
-                    presentList.toConjunctionFormula(),
-                    futureList.toConjunctionFormula()
+                    newConjunction(pastList),
+                    newConjunction(presentList),
+                    newConjunction(futureList)
             );
         }
         return matrix;
@@ -308,8 +309,7 @@ public class FormulaSeparator {
 
         OperatorFormula y1 = f1; // set y1 by default to f1
         OperatorFormula y2 = f2; // set y2 by default to f2
-        BinaryFormula and1 = null;
-        BinaryFormula and2 = null;
+        BinaryFormula and1, and2;
         OperatorFormula p1 = y1.getParent(); // save the parent of y1
         OperatorFormula p2 = y2.getParent(); // save the parent of y2
 
@@ -492,7 +492,7 @@ public class FormulaSeparator {
             UnaryFormula uPhi = (UnaryFormula) phi;
             q.add(uPhi.getOperand());
         }
-        if(phi.isBinary()){
+        if(phi.isBinary()) {
             BinaryFormula bPhi = (BinaryFormula) phi;
             q.add(bPhi.getLoperand());
             q.add(bPhi.getRoperand());
@@ -763,7 +763,6 @@ public class FormulaSeparator {
     /** S(a & !U(A,B), q) */
     // pre: f.getOperator() == SINCE/UNTIL
     public static Formula[] subformulas2(BinaryFormula f){
-        System.out.println(f);
         BinaryFormula lAnd =  (BinaryFormula) f.getLoperand();
         UnaryFormula lNot = (UnaryFormula) lAnd.getRoperand();
         BinaryFormula lUntil = (BinaryFormula) lNot.getOperand();
@@ -805,7 +804,7 @@ public class FormulaSeparator {
 
     /** S(a & U(A,B), q | U(A,B)) or S(a & U(A,B), q | !U(A,B)) */
     // pre: f.getOperator() == SINCE/UNTIL
-    public static Formula[] subformulas57(BinaryFormula f){
+    public static Formula[] subformulas57(BinaryFormula f) {
         BinaryFormula lAnd =  (BinaryFormula) f.getLoperand();
         BinaryFormula lUntil = (BinaryFormula) lAnd.getRoperand();
         BinaryFormula rOr = (BinaryFormula) f.getRoperand();

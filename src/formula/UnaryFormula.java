@@ -57,26 +57,7 @@ public class UnaryFormula extends OperatorFormula {
 
     @Override
     public String toString() {
-        String str = this.getOperator().getImage();
-        if(operand.isAtomic()) {
-            AtomicFormula operandA = (AtomicFormula) operand;
-            str += operandA.toString();
-        }
-        else {
-            if(operand.isOperator()) {
-                OperatorFormula operandF = (OperatorFormula) operand;
-                if(operandF.isUnary()) {
-                    UnaryFormula operandU = (UnaryFormula) operandF;
-                    str += operandU.toString();
-                }
-                if(operandF.isBinary()) {
-                    BinaryFormula operandB = (BinaryFormula) operandF;
-                    str += "(" + operandB + ")";
-                }
-            }
-            else str += "(" + operand.toString() + ")";
-        }
-        return str;
+        return String.format("%s(%s)", this.getOperator(), this.getOperand());
     }
 
     @Override
