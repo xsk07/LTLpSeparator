@@ -39,7 +39,7 @@ public class UnaryFormula extends OperatorFormula {
     protected void updateTime(Formula o) {
         if(!this.getOperand().equals(o)) {
             throw new IllegalArgumentException(
-                    "The formula passed as argument should be the operand of this"
+                    "The formula passed as argument must be the operand of this"
             );
         }
         this.setTime(determineTime(this.getOperator(), o.getTime()));

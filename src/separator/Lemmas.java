@@ -3,15 +3,13 @@ package separator;
 import formula.BinaryFormula;
 import formula.Formula;
 import formula.Operator;
-
 import static formula.Operator.*;
 
 public abstract class Lemmas {
 
-
     /** LEMMA A.1
-      * (AUB) & (CUD) =>* E = E1 | E2 | E3
-      * E1 = (A&C)U(B&D)
+      * U(A,B) & U(C,D) =>* E = E1 | E2 | E3
+      * E1 = U(A&C, B&D)
       * E2 = (A&D&(CUD))U(B&D)
       * E3 = ((C&B&(AUB))U(B&D)) */
     public static BinaryFormula lemmaA1(BinaryFormula f) {

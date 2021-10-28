@@ -5,10 +5,11 @@ import java.util.*;
 import static formula.AtomConstant.*;
 import static formula.BooleanRules.*;
 import static formula.Operator.*;
+import static separator.Direction.LEFT;
+import static separator.Direction.RIGHT;
 import static separator.FormulaEliminator.*;
 import static separator.Lemmas.*;
 import static separator.OperatorChain.getBorderNodes;
-
 
 public class FormulaSeparator {
 
@@ -604,135 +605,90 @@ public class FormulaSeparator {
     }
 
 
+    /** Applies the correct elimination for the binary formula got in input.
+     *  @return returns the formula after being applied the corresponding elimination,
+     *  if no elimination can be applied returns the same input formula
+     *  @param f a BinaryFormula with operator SINCE or UNTIL */
     public Formula applyElimination(BinaryFormula f) {
-
-        if(!(f.getOperator().equals(SINCE) || f.getOperator().equals(UNTIL))){
-            throw new IllegalArgumentException(
+        if(!(f.isOperator(SINCE) || f.isOperator(UNTIL))) {
+            throw new IllegalArgumentException (
                     String.format(
-                            "The operator of the formula should be S or U but is %s",
+                            "The operator of the formula must be S or U but is %s",
                             f.getOperator()
                     )
             );
         }
-
         int nc = nestingCase(f);
-        ArrayList<Formula> sfms;
-        switch (nc) {
-            case 1 -> {
-                sfms = subformulas1(f);
-                System.out.println("Elimination1");
-                return elimination1(
-                        sfms, f.getOperator()
-                );
-            }
-            case 2 -> {
-                sfms = subformulas2(f);
-                System.out.println("Elimination2");
-                return elimination2(
-                        sfms, f.getOperator()
-                );
-            }
-            case 3 -> {
-                sfms = subformulas3(f);
-                System.out.println("Elimination3");
-                return elimination3(
-                        sfms, f.getOperator()
-                );
-            }
-            case 4 -> {
-                sfms = subformulas4(f);
-                System.out.println("Elimination4");
-                return elimination4(
-                        sfms, f.getOperator()
-                );
-            }
-            case 5 -> {
-                sfms = subformulas57(f);
-                System.out.println("Elimination5");
-                return elimination5(
-                        sfms, f.getOperator()
-                );
-            }
-            case 6 -> {
-                sfms = subformulas6(f);
-                System.out.println("Elimination6");
-                return elimination6(
-                        sfms, f.getOperator()
-                );
-            }
-            case 7 -> {
-                sfms = subformulas57(f);
-                System.out.println("Elimination7");
-                return elimination7(
-                        sfms, f.getOperator()
-                );
-            }
-            case 8 -> {
-                sfms = subformulas8(f);
-                System.out.println("Elimination8");
-                return elimination8(
-                        sfms, f.getOperator()
-                );
-            }
-            default -> { return f; }
-        }
+        Formula[] sfms = getSubformulas(f,nc);
+        Operator op = f.getOperator();
+        return switch (nc) {
+            case 1 -> elimination1(sfms,op);
+            case 2 -> elimination2(sfms,op);
+            case 3 -> elimination3(sfms,op);
+            case 4 -> elimination4(sfms,op);
+            case 5 -> elimination5(sfms,op);
+            case 6 -> elimination6(sfms,op);
+            case 7 -> elimination7(sfms,op);
+            case 8 -> elimination8(sfms,op);
+            default -> f;
+        };
     }
 
     /** @return Returns the number of the nesting case of the formula.
      * If the formula does not correspond to any nesting case of the eliminations returns 0 */
     public int nestingCase(BinaryFormula f) {
-        Operator fOp = f.getOperator();
-        if(fOp == SINCE || fOp == UNTIL) {
-            int lsc = leftSubtreeCase(f);
-            int rsc = rightSubtreeCase(f);
+        Operator op_f = f.getOperator();
+        if(op_f == SINCE || op_f == UNTIL) {
+            int lsc = subtreeCase(f, LEFT);
+            int rsc = subtreeCase(f, RIGHT);
             switch (lsc) {
                 case 0:
                     return switch (rsc) {
-                        case 1 -> 3;
-                        case 2 -> 4;
-                        default -> 0;
+                        case 1 -> 3;  // S(a, q | U(A,B))
+                        case 2 -> 4;  // S(a, q | !U(A,B))
+                        default -> 0; // S(a,b)
                     };
                 case 1:
                     switch (rsc) {
-                        case 1: {
-                            ArrayList<Formula> ltsf = subformulas1(f);
-                            ArrayList<Formula> rtsf = subformulas3(f);
-                            if(
-                                    ltsf.get(1).equals(rtsf.get(1))
-                                    && ltsf.get(2).equals(rtsf.get(2))
-                            ) return 5;
+                        case 1: { // S(a & U(A,B), q | U(A,B))
+                            Formula[] ltsf = getSubformulas(f,1);
+                            Formula[] rtsf = getSubformulas(f,3);
+                            boolean sameA = ltsf[1].equals(rtsf[1]);
+                            boolean sameB = ltsf[2].equals(rtsf[2]);
+                            if(sameA && sameB) return 5;
+                            break;
                         }
-                        case 2: {
-                            ArrayList<Formula> ltsf = subformulas1(f);
-                            ArrayList<Formula> rtsf = subformulas4(f);
-                            if(
-                                    ltsf.get(1).equals(rtsf.get(1))
-                                    && ltsf.get(2).equals(rtsf.get(2))
-                            ) return 7;
+                        case 2: { // S(a & U(A,B), q | !U(A,B))
+                            Formula[] ltsf = getSubformulas(f,1);
+                            Formula[] rtsf = getSubformulas(f,4);
+                            boolean sameA = ltsf[1].equals(rtsf[1]);
+                            boolean sameB = ltsf[2].equals(rtsf[2]);
+                            if(sameA && sameB) return 7;
+                            break;
                         }
-                        default: return 1;
+                        default: return 1; // S(a & U(A,B), q)
                     }
                 case 2:
                     switch (rsc) {
-                        case 1: {
-                            ArrayList<Formula> ltsf = subformulas2(f);
-                            ArrayList<Formula> rtsf = subformulas3(f);
-                            if(
-                                    ltsf.get(1).equals(rtsf.get(1))
-                                    && ltsf.get(2).equals(rtsf.get(2))
-                            ) return 6;
+                        case 1: { // S(a & !U(A,B), q | U(A,B))
+                            Formula[] ltsf = getSubformulas(f,2);
+                            Formula[] rtsf = getSubformulas(f,3);
+                            boolean sameA = ltsf[1].equals(rtsf[1]);
+                            boolean sameB = ltsf[2].equals(rtsf[2]);
+                            if(sameA && sameB)  return 6;
+                            break;
                         }
-                        case 2: {
-                            ArrayList<Formula> ltsf = subformulas2(f);
-                            ArrayList<Formula> rtsf = subformulas4(f);
-                            if(
-                                    ltsf.get(1).equals(rtsf.get(1))
-                                    && ltsf.get(2).equals(rtsf.get(2))
-                            ) return 8;
+                        case 2: { // S(a & !U(A,B), q | !U(A,B))
+                            Formula[] ltsf = getSubformulas(f,2);
+                            Formula[] rtsf = getSubformulas(f,4);
+                            boolean sameA = ltsf[1].equals(rtsf[1]);
+                            boolean sameB = ltsf[2].equals(rtsf[2]);
+                            if(sameA && sameB) return 8;
+                            break;
                         }
-                        default: return 2;
+                        default: return 2; // S(a & !U(A,B), q)
                     }
-                default: return 0;
+                default: return 0; // S(a,b)
             }
         }
         throw new IllegalArgumentException(
@@ -743,226 +699,154 @@ public class FormulaSeparator {
         );
     }
 
-    // pre: f.getOperator() == SINCE/UNTIL
-    /** Recognizes the left subtree case/pattern.
-     * @return Returns 1 if the left child of the formula is of the form: (a&(AUB))Sq
-     * Returns 2 if the left child of the formula is of the form: (a&!(AUB))Sq
-     * Returns 0 elsewhere */
-    private int leftSubtreeCase(BinaryFormula f) {
+    /** Returns the number case of the subtree.
+     * @param f a binary formula with operator SINCE or UNTIL
+     * @param d the direction LEFT or RIGHT */
+    public int subtreeCase(BinaryFormula f, Direction d) {
+        if(!(f.isOperator(UNTIL) || f.isOperator(SINCE))) throw new IllegalArgumentException(
+                String.format(
+                        "The formula must have 'S' or 'U' as operator but has %s",
+                        f.getOperator()
+                )
+        );
         int n = 0;
-        Operator fOp = f.getOperator(); // the top operator of the formula f
-        Formula x = f.getLoperand(); // the left operand of the formula f
-
-        if(x.isOperator()){
-            OperatorFormula ofX = (OperatorFormula) x;
-
-            if(ofX.getOperator() == AND) {
-
-                BinaryFormula andX = (BinaryFormula) ofX;
-
-                Formula y = andX.getRoperand();
-                if(y.isOperator()) {
-                    OperatorFormula ofY = (OperatorFormula) y;
-                    if(ofY.isOperator()){
-                        if(ofY.getOperator() == fOp.getMirrorOperator()) {
-                            return  1;
-                        }
-                        if(ofY.getOperator() == NOT) {
-                            UnaryFormula ufY = (UnaryFormula) ofY;
-                            Formula z = ufY.getOperand();
-                            if(z.isOperator()){
-                                OperatorFormula ofZ = (OperatorFormula) z;
-                                if(ofZ.getOperator() == fOp.getMirrorOperator()) {
-                                    return  2;
-                                }
-                            }
-                        }
-                    }
-                }
+        Operator op_f = f.getOperator();
+        /* default: if d is equal to LEFT then
+         * set the subtree to the left operand of f
+         * and the operator op to OR */
+        Formula child = f.getLoperand();
+        Operator op = AND;
+        /* if d is equal to RIGHT then
+         * set the subtree to the left operand of f
+         * and the operator op to AND */
+        if(d == RIGHT) {
+            child = f.getRoperand();
+            op = OR;
+        }
+        if(child.isOperator(op)) {
+            BinaryFormula opChild = (BinaryFormula) child;
+            Formula cc = opChild.getRoperand();
+            if(cc.isOperator(op_f.getMirrorOperator())) return  1;
+            if(cc.isOperator(NOT)) {
+                UnaryFormula notSf = (UnaryFormula) cc;
+                Formula z = notSf.getOperand();
+                if(z.isOperator(op_f.getMirrorOperator())) return  2;
             }
         }
         return n;
     }
 
-    // pre: f.getOperator() == SINCE/UNTIL
-    /** Recognizes the right subtree case/pattern.
-     * @return Returns 1 if the right child of the formula is of the form: (a|(AUB))Sq
-     * Returns 2 if the right child of the formula is of the form: (a|!(AUB))Sq
-     * Returns 0 elsewhere */
-    private int rightSubtreeCase(BinaryFormula f) {
-        int n = 0;
-        Operator fOp = f.getOperator();
-        Formula x = f.getRoperand();
-        if(x.isOperator()){
-            OperatorFormula ofX = (OperatorFormula) x;
-
-            // if the right operand is an OR
-            if(ofX.getOperator().equals(OR)) {
-
-                BinaryFormula orX = (BinaryFormula) ofX;
-
-                Formula y = orX.getRoperand();
-                if(y.isOperator()) {
-                    OperatorFormula ofY = (OperatorFormula) y;
-                    if(ofY.isOperator()){
-                        if(ofY.getOperator() == fOp.getMirrorOperator()) {
-                            return 1;
-                        }
-                        if(ofY.getOperator() == NOT) {
-                            UnaryFormula ufY = (UnaryFormula) ofY;
-                            Formula z = ufY.getOperand();
-                            if(z.isOperator()){
-                                OperatorFormula ofZ = (OperatorFormula) z;
-                                if(ofZ.getOperator() == fOp.getMirrorOperator()) {
-                                    return 2;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return n;
+    /** Returns an array containing the sub-formulas of the formula f.
+     * [0] == a, [1] == A, [2] == B, [3] == q */
+    public static Formula[] getSubformulas(BinaryFormula f, int c) {
+        return switch(c) {
+            case 1 -> subformulas1(f);
+            case 2 -> subformulas2(f);
+            case 3 -> subformulas3(f);
+            case 4 -> subformulas4(f);
+            case 5,7 -> subformulas57(f);
+            case 6 -> subformulas6(f);
+            case 8 -> subformulas8(f);
+            default -> new Formula[4];
+        };
     }
 
-    /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination1 */
+    /** S(a & U(A,B), q) */
     // pre: f.getOperator() == SINCE/UNTIL
-    public ArrayList<Formula> subformulas1(BinaryFormula f){
-        ArrayList<Formula> al= new ArrayList<>();
-
+    public static Formula[] subformulas1(BinaryFormula f) {
         BinaryFormula lAnd =  (BinaryFormula) f.getLoperand();
-        Formula a = lAnd.getLoperand();
         BinaryFormula lUntil = (BinaryFormula) lAnd.getRoperand();
-        Formula uA = lUntil.getLoperand();
-        Formula uB = lUntil.getRoperand();
-        Formula q = f.getRoperand();
-
-        al.add(a);
-        al.add(uA);
-        al.add(uB);
-        al.add(q);
-        return al;
+        return new Formula[] {
+                lAnd.getLoperand(),   // a
+                lUntil.getLoperand(), // A
+                lUntil.getRoperand(), // B
+                f.getRoperand()       // q
+        };
     }
 
-    /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination2 */
+    /** S(a & !U(A,B), q) */
     // pre: f.getOperator() == SINCE/UNTIL
-    public ArrayList<Formula> subformulas2(BinaryFormula f){
-        ArrayList<Formula> al= new ArrayList<>();
-
+    public static Formula[] subformulas2(BinaryFormula f){
         BinaryFormula lAnd =  (BinaryFormula) f.getLoperand();
-        Formula a = lAnd.getLoperand();
         UnaryFormula lNot = (UnaryFormula) lAnd.getRoperand();
         BinaryFormula lUntil = (BinaryFormula) lNot.getOperand();
-        Formula uA = lUntil.getLoperand();
-        Formula uB = lUntil.getRoperand();
-        Formula q = f.getRoperand();
-
-        al.add(a);
-        al.add(uA);
-        al.add(uB);
-        al.add(q);
-        return al;
+        return new Formula[] {
+                lAnd.getLoperand(),   // a
+                lUntil.getLoperand(), // A
+                lUntil.getRoperand(), // B
+                f.getRoperand()       // q
+        };
     }
 
-    /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination3 */
+    /** S(a, q | U(A,B)) */
     // pre: f.getOperator() == SINCE/UNTIL
-    public ArrayList<Formula> subformulas3(BinaryFormula f){
-        ArrayList<Formula> al= new ArrayList<>();
-
-        Formula a = f.getLoperand();
+    public static Formula[] subformulas3(BinaryFormula f){
         BinaryFormula rOr = (BinaryFormula) f.getRoperand();
-        Formula q = rOr.getLoperand();
         BinaryFormula rUntil = (BinaryFormula) rOr.getRoperand();
-        Formula uA = rUntil.getLoperand();
-        Formula uB = rUntil.getRoperand();
-
-        al.add(a);
-        al.add(uA);
-        al.add(uB);
-        al.add(q);
-        return al;
+        return new Formula[] {
+                f.getLoperand(),      // a
+                rUntil.getLoperand(), // A
+                rUntil.getRoperand(), // B
+                rOr.getLoperand()     // q
+        };
     }
 
-    /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination4 */
+    /** S(a, q | !U(A,B)) */
     // pre: f.getOperator() == SINCE/UNTIL
-    public ArrayList<Formula> subformulas4(BinaryFormula f){
-        ArrayList<Formula> al= new ArrayList<>();
-
-        Formula a = f.getLoperand();
+    public static Formula[]  subformulas4(BinaryFormula f){
         BinaryFormula rOr = (BinaryFormula) f.getRoperand();
-        Formula q = rOr.getLoperand();
         UnaryFormula rNot = (UnaryFormula) rOr.getRoperand();
         BinaryFormula rUntil = (BinaryFormula) rNot.getOperand();
-        Formula uA = rUntil.getLoperand();
-        Formula uB = rUntil.getRoperand();
+        return new Formula[] {
+                f.getLoperand(),      // a
+                rUntil.getLoperand(), // A
+                rUntil.getRoperand(), // B
+                rOr.getLoperand()     // q
 
-        al.add(a);
-        al.add(uA);
-        al.add(uB);
-        al.add(q);
-        return al;
+        };
     }
 
-
-    /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination5
-     * and Elimination7 */
+    /** S(a & U(A,B), q | U(A,B)) or S(a & U(A,B), q | !U(A,B)) */
     // pre: f.getOperator() == SINCE/UNTIL
-    public ArrayList<Formula> subformulas57(BinaryFormula f){
-        ArrayList<Formula> al= new ArrayList<>();
+    public static Formula[] subformulas57(BinaryFormula f){
         BinaryFormula lAnd =  (BinaryFormula) f.getLoperand();
-        Formula a = lAnd.getLoperand();
         BinaryFormula lUntil = (BinaryFormula) lAnd.getRoperand();
-        Formula uA = lUntil.getLoperand();
-        Formula uB = lUntil.getRoperand();
         BinaryFormula rOr = (BinaryFormula) f.getRoperand();
-        Formula q = rOr.getLoperand();
-
-        al.add(a);
-        al.add(uA);
-        al.add(uB);
-        al.add(q);
-        return al;
+        return new Formula[] {
+                lAnd.getLoperand(),   // a
+                lUntil.getLoperand(), // A
+                lUntil.getRoperand(), // B
+                rOr.getLoperand()     // q
+        };
     }
 
-    /** @return Returns the array list of the subformulas (q,A,B,a) which will be used in the Elimination6 */
+    /** S(a & !U(A,B), q | U(A,B)) */
     // pre: f.getOperator() == SINCE/UNTIL
-    public ArrayList<Formula> subformulas6(BinaryFormula f) {
-        ArrayList<Formula> al= new ArrayList<>();
-
+    public static Formula[] subformulas6(BinaryFormula f) {
         BinaryFormula lAnd = (BinaryFormula) f.getLoperand();
-        Formula a = lAnd.getLoperand();
         BinaryFormula rOr = (BinaryFormula) f.getRoperand();
-        Formula q = rOr.getLoperand();
         BinaryFormula rUntil = (BinaryFormula) rOr.getRoperand();
-        Formula uA = rUntil.getLoperand();
-        Formula uB = rUntil.getRoperand();
-
-        al.add(a);
-        al.add(uA);
-        al.add(uB);
-        al.add(q);
-        return al;
+        return new Formula[] {
+                lAnd.getLoperand(),   // a
+                rUntil.getLoperand(), // A
+                rUntil.getRoperand(), // B
+                rOr.getLoperand()     // q
+        };
     }
 
-    /** @return Returns the array list of the subformulas which will be used in the Elimination8 */
+    /** S(a & !U(A,B), q | !U(A,B)) */
     // pre: f.getOperator() == SINCE/UNTIL
-    public ArrayList<Formula> subformulas8(BinaryFormula f){
-        ArrayList<Formula> al= new ArrayList<>();
-
+    public static Formula[] subformulas8(BinaryFormula f){
         BinaryFormula lAnd =  (BinaryFormula) f.getLoperand();
-        Formula a = lAnd.getLoperand();
         UnaryFormula lNot = (UnaryFormula) lAnd.getRoperand();
         BinaryFormula lUntil = (BinaryFormula) lNot.getOperand();
-        Formula uA = lUntil.getLoperand();
-        Formula uB = lUntil.getRoperand();
         BinaryFormula rOr = (BinaryFormula) f.getRoperand();
-        Formula q = rOr.getLoperand();
-
-        al.add(a);
-        al.add(uA);
-        al.add(uB);
-        al.add(q);
-        return al;
+        return new Formula[] {
+                lAnd.getLoperand(),   // a
+                lUntil.getLoperand(), // A
+                lUntil.getRoperand(), // B
+                rOr.getLoperand()     // q
+        };
     }
 
 }

@@ -8,7 +8,7 @@ public abstract class BooleanRules {
     /** @return Returns the negation of the formula on which the method was called */
     public static UnaryFormula negate(Formula f) { return new UnaryFormula(NOT, f, null); }
 
-    public static boolean needTruthValueNegation(UnaryFormula f){
+    public static boolean needTruthValueNegation(UnaryFormula f) {
         if(f.isOperator(NOT)){
             if(f.getOperand().isAtomic()){
                 AtomicFormula cf = (AtomicFormula) f.getOperand();
@@ -33,26 +33,30 @@ public abstract class BooleanRules {
         return f;
     }
 
+    /** (A->B) =>* !A|B */
     public static BinaryFormula implicationRule(BinaryFormula f) {
         return new BinaryFormula(
-                OR,
-                f.getLoperand().negate(),
-                f.getRoperand()
+                OR, // |
+                f.getLoperand().negate(), // !A
+                f.getRoperand() // B
         );
     }
 
+    /** (A<->B) =>* (A&B) | (!A&!B) */
     public static BinaryFormula equivalenceRule(BinaryFormula f) {
         return new BinaryFormula(
-                OR,
+                OR, // |
+                // A & B
                 new BinaryFormula(
-                        AND,
-                        f.getLoperand().deepCopy(),
-                        f.getRoperand().deepCopy()
+                        AND, // &
+                        f.getLoperand().deepCopy(), // A
+                        f.getRoperand().deepCopy() // B
                 ),
+                // !A & !B
                 new BinaryFormula(
-                        AND,
-                        f.getLoperand().deepCopy().negate(),
-                        f.getRoperand().deepCopy().negate()
+                        AND, // &
+                        f.getLoperand().deepCopy().negate(), // !A
+                        f.getRoperand().deepCopy().negate() // B
                 )
         );
     }
@@ -99,6 +103,8 @@ public abstract class BooleanRules {
         return (f.getOperand().isOperator(AND) || f.getOperand().isOperator(OR));
     }
 
+
+    /** !(A&B) => !A|!B */
     public static Formula deMorganLaw(UnaryFormula f) {
 
         if(f.isOperator(NOT)) {
@@ -106,11 +112,12 @@ public abstract class BooleanRules {
             if(f.getOperand().isOperator(OR) || f.getOperand().isOperator(AND)) {
                 BinaryFormula bf = (BinaryFormula) f.getOperand();
                 assert bf.getOperator().getMirrorOperator() != null;
-                bf.setOperator(bf.getOperator().getMirrorOperator());
-                bf.setLoperand(negate(bf.getLoperand()));
-                bf.setRoperand(negate(bf.getRoperand()));
                 System.out.println("DeMorganLaw");
-                return bf;
+                return new BinaryFormula (
+                        bf.getOperator().getMirrorOperator(), // |
+                        negate(bf.getLoperand()), // !A
+                        negate(bf.getRoperand()) // !B
+                );
             }
             return negate(f);
         }

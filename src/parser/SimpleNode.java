@@ -85,12 +85,13 @@ public class SimpleNode implements Node {
     return id;
   }
 
-  /** Translates a parse tree, consisting of the instances of the SimpleNode class,
+  /** Translates a parse tree, consisting of an instance of the SimpleNode class,
    * into an instance of the Formula class.
    * @return Returns a formula which is the translated form of the parse tree on which the method was called
    * @see formula.Formula */
   public Formula fromSimpleNodeToFormula() throws IllegalArgumentException {
-    switch(this.getId()){
+
+    switch(this.getId()) {
       case 0: { //INPUT
                 /* Jump the Input node and return, as the root of the formula, the
                 formula translation of its unique child */
@@ -101,11 +102,19 @@ public class SimpleNode implements Node {
       case 2:
       case 3:
       case 4:
-      case 5:
-      case 6: return translateBinaryNode(this);
+      case 5: return translateBinaryNode(this);
+      case 6: {
+        BinaryFormula bf = translateBinaryNode(this);
+        bf.swapChildren();
+        return bf;
+      }
       case 7: { //UNARY
         SimpleNode c = (SimpleNode) this.jjtGetChild(0);
         String img = this.jjtGetValue();
+        /* the input formulas are expressed in infix notation
+         * while the program logic uses the prefix one,
+         * hence to preserve inside the program the same meaning
+         * of the input formulae it is needed to swap the two children */
         return new UnaryFormula(
                 fromString(img),
                 c.fromSimpleNodeToFormula()
@@ -121,6 +130,7 @@ public class SimpleNode implements Node {
     }
   }
 
+
   /** A fromSimpleNodeToFormula subroutine.
    * Translates a SimpleNode, with an id corresponding to a binary operator,
    * into an equivalent formula.
@@ -128,14 +138,14 @@ public class SimpleNode implements Node {
    * @return Returns the translation of the node into a formula
    * @see #fromSimpleNodeToFormula()
    * */
-  private static Formula translateBinaryNode(SimpleNode n) {
+  private static BinaryFormula translateBinaryNode(SimpleNode n) {
     SimpleNode lc = (SimpleNode) n.jjtGetChild(0); // left child of n
     SimpleNode rc = (SimpleNode) n.jjtGetChild(1); // right child of n
     Operator op = fromString(n.jjtGetValue());
     return new BinaryFormula(
             op,
             lc.fromSimpleNodeToFormula(), // translation of the left child
-            rc.fromSimpleNodeToFormula() // translation of the right child
+            rc.fromSimpleNodeToFormula()  // translation of the right child
     );
   }
 

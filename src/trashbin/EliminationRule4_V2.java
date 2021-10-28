@@ -3,7 +3,6 @@ package trashbin;
 import formula.BinaryFormula;
 import formula.Formula;
 import formula.Operator;
-import java.util.ArrayList;
 import static formula.Operator.*;
 import static formula.Operator.IMPL;
 import static separator.SubformulasPatterns.subformulaPattern18;
@@ -17,7 +16,7 @@ public class EliminationRule4_V2 {
      *      E2 = ((!q & !a) S (!a & B)) -> !(A|(B&(AUB)))
      * @param fms The subformulas needed for the elimination.
      * Where: fms[0] == a, fms[1] == A, fms[2] == B, fms[3] == q */
-    public static BinaryFormula elimination4_v2(ArrayList<Formula> fms, Operator op){
+    public static BinaryFormula elimination4_v2(Formula[] fms, Operator op){
 
         return new BinaryFormula(
                 OR,
@@ -28,29 +27,29 @@ public class EliminationRule4_V2 {
     }
 
     /**  E1 =  a S ((!a & ((!q & !a) S (!a & B))) -> !A) */
-    public static BinaryFormula e4_E1(ArrayList<Formula> fms, Operator op) {
+    public static BinaryFormula e4_E1(Formula[] fms, Operator op) {
 
         // a S ((!a & ((!q & !a) S (!a & B))) -> !A)
         return new BinaryFormula(
                 op, // S
-                fms.get(0).deepCopy(), // a
+                fms[0].deepCopy(), // a
                 // (!a & ((!q & !a) S (!a & B))) -> !A
                 new BinaryFormula(
                         IMPL,
                         // !a & ((!q & !a) S (!a & B))
                         new BinaryFormula(
                                 AND,
-                                fms.get(0).deepCopy().negate(), // !a
+                                fms[0].deepCopy().negate(), // !a
                                 subformulaPattern18(fms, op) // (!q & !a) S (!a & B)
                         ),
-                        fms.get(1).deepCopy().negate() // !A
+                        fms[1].deepCopy().negate() // !A
                 )
         );
 
     }
 
     /**  E2 = ((!q & !a) S (!a & B)) -> !(A|(B&(AUB))) */
-    public static BinaryFormula e4_E2(ArrayList<Formula> fms, Operator op) {
+    public static BinaryFormula e4_E2(Formula[] fms, Operator op) {
 
         // ((!q & !a) S (!a & B)) -> !(A|(B&(AUB)))
         return new BinaryFormula(

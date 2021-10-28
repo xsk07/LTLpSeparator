@@ -1,5 +1,9 @@
 package formula;
 
+import java.util.Collection;
+import java.util.Iterator;
+import static formula.Operator.AND;
+import static formula.Operator.OR;
 import static formula.TimeConstant.*;
 
 /** The BinaryFormula class represents an LTL formula which the root operator is of arity two (binary).
@@ -10,7 +14,7 @@ public class BinaryFormula extends OperatorFormula {
     private Formula roperand;
 
     /** Initializes a newly created BinaryFormula with
-     * operator op, left operand lOp and right operand rOp.
+     * operator op, left operand lc and right operand rc.
      * @param op The binary operator of the formula
      * @param lc The left operand
      * @param rc the right operand */
@@ -194,6 +198,35 @@ public class BinaryFormula extends OperatorFormula {
             return false;
         }
         return false;
+    }
+
+    /** Returns a new BinaryFormula that is the disjunction of the formulas got in input
+      * @param fms a Collection of formulas
+      * @return a new BinaryFormula that is the disjunction of the formulas of the collection
+      * got in input */
+    public static BinaryFormula newDisjunction(Collection<Formula> fms) {
+        return combine(OR, fms);
+    }
+
+    /** Returns a new BinaryFormula that is the conjunction of the formulas got in input
+     * @param fms a Collection of formulas
+     * @return a new BinaryFormula that is the conjunction of the formulas of the collection
+     * got in input */
+    public static BinaryFormula newConjunction(Collection<Formula> fms) {
+        return combine(AND, fms);
+    }
+
+    private static BinaryFormula combine(Operator op, Collection<Formula> fms) {
+        if(!op.isBinary()) throw new IllegalArgumentException(
+                "the operator must be binary"
+        );
+        if(fms.size() < 2) throw new IndexOutOfBoundsException (
+                "the list must contain at least two elements"
+        );
+        Iterator<Formula> itr = fms.iterator();
+        Formula prev = itr.next();
+        while (itr.hasNext()) prev = new BinaryFormula(op, prev, itr.next());
+        return (BinaryFormula) prev;
     }
 
 }
