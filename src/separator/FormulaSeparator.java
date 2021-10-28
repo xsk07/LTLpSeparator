@@ -133,14 +133,12 @@ public class FormulaSeparator {
                     case FUTURE -> futureList.add(p);
                 }
             }
-
             matrix.addTriple(
                     pastList.toConjunctionFormula(),
                     presentList.toConjunctionFormula(),
                     futureList.toConjunctionFormula()
             );
         }
-
         return matrix;
     }
 
@@ -655,7 +653,7 @@ public class FormulaSeparator {
                             boolean sameA = ltsf[1].equals(rtsf[1]);
                             boolean sameB = ltsf[2].equals(rtsf[2]);
                             if(sameA && sameB) return 5;
-                            break;
+                            return 1; // S(a & U(A,B), q | U(C,D))
                         }
                         case 2: { // S(a & U(A,B), q | !U(A,B))
                             Formula[] ltsf = getSubformulas(f,1);
@@ -663,7 +661,7 @@ public class FormulaSeparator {
                             boolean sameA = ltsf[1].equals(rtsf[1]);
                             boolean sameB = ltsf[2].equals(rtsf[2]);
                             if(sameA && sameB) return 7;
-                            break;
+                            return 1; // S(a & U(A,B), q | !U(C,D))
                         }
                         default: return 1; // S(a & U(A,B), q)
                     }
@@ -675,7 +673,7 @@ public class FormulaSeparator {
                             boolean sameA = ltsf[1].equals(rtsf[1]);
                             boolean sameB = ltsf[2].equals(rtsf[2]);
                             if(sameA && sameB)  return 6;
-                            break;
+                            return 2; // S(a & !U(A,B), q | U(C,D))
                         }
                         case 2: { // S(a & !U(A,B), q | !U(A,B))
                             Formula[] ltsf = getSubformulas(f,2);
@@ -683,7 +681,7 @@ public class FormulaSeparator {
                             boolean sameA = ltsf[1].equals(rtsf[1]);
                             boolean sameB = ltsf[2].equals(rtsf[2]);
                             if(sameA && sameB) return 8;
-                            break;
+                            return 2; // S(a & !U(A,B), q | !U(C,D))
                         }
                         default: return 2; // S(a & !U(A,B), q)
                     }
@@ -708,7 +706,6 @@ public class FormulaSeparator {
                         f.getOperator()
                 )
         );
-        int n = 0;
         Operator op_f = f.getOperator();
         /* default: if d is equal to LEFT then
          * set the subtree to the left operand of f
@@ -732,7 +729,7 @@ public class FormulaSeparator {
                 if(z.isOperator(op_f.getMirrorOperator())) return  2;
             }
         }
-        return n;
+        return 0;
     }
 
     /** Returns an array containing the sub-formulas of the formula f.
@@ -766,6 +763,7 @@ public class FormulaSeparator {
     /** S(a & !U(A,B), q) */
     // pre: f.getOperator() == SINCE/UNTIL
     public static Formula[] subformulas2(BinaryFormula f){
+        System.out.println(f);
         BinaryFormula lAnd =  (BinaryFormula) f.getLoperand();
         UnaryFormula lNot = (UnaryFormula) lAnd.getRoperand();
         BinaryFormula lUntil = (BinaryFormula) lNot.getOperand();
