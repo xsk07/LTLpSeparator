@@ -5,8 +5,7 @@ import java.util.*;
 import static formula.AtomConstant.*;
 import static formula.BooleanRules.*;
 import static formula.Operator.*;
-import static separator.Direction.LEFT;
-import static separator.Direction.RIGHT;
+import static separator.Direction.*;
 import static separator.FormulaEliminator.*;
 import static separator.Lemmas.*;
 import static separator.OperatorChain.getBorderNodes;
@@ -713,12 +712,12 @@ public class FormulaSeparator {
         Operator op_f = f.getOperator();
         /* default: if d is equal to LEFT then
          * set the subtree to the left operand of f
-         * and the operator op to OR */
+         * and the operator op to AND */
         Formula child = f.getLoperand();
         Operator op = AND;
         /* if d is equal to RIGHT then
          * set the subtree to the left operand of f
-         * and the operator op to AND */
+         * and the operator op to OR */
         if(d == RIGHT) {
             child = f.getRoperand();
             op = OR;
