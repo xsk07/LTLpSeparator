@@ -1,6 +1,6 @@
 # LTLfSeparator
 
-LTLpfSeparator is a tool for the separation of LTLpf formulae into triples of pure past, pure present and pure future automata.
+LTLfSeparator is a tool for the separation of LTLpf formulae into triples of pure past, pure present and pure future automata.
 It is based on Linear Temporal Logic and the Gabbay Separation Theorem.
 Formulae could be passed as text files or directly typed on the command line.
 The result can be save as a simple text file, as a tree representation image of the formula or as triples of pure past, pure present and pure future automata.
