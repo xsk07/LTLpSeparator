@@ -73,14 +73,16 @@ public class FormulaSeparator {
                     case NOT: {
                         UnaryFormula unf = (UnaryFormula) onf;
                         if(needsInvolution(unf)) {
-                            nf = unf.replaceFormula(involution(unf));
-                            updateRoot(nf);
-                            q.add(nf);
+                            f = unf.replaceFormula(involution(unf));
+                            updateRoot(f);
+                            q.add(f);
+                            break;
                         }
                         if(needsDeMorganLaw(unf)) {
-                            nf = unf.replaceFormula(deMorganLaw(unf));
-                            updateRoot(nf);
-                            q.add(nf);
+                            f = unf.replaceFormula(deMorganLaw(unf));
+                            updateRoot(f);
+                            q.add(f);
+                            break;
                         }
                         break;
                     }
@@ -93,9 +95,9 @@ public class FormulaSeparator {
                     case AND: {
                         BinaryFormula bnf = (BinaryFormula) onf;
                         if(needsDistributiveLaw(bnf)) {
-                            nf = bnf.replaceFormula(distributiveLaw(bnf));
-                            updateRoot(nf);
-                            q.add(nf);
+                            f = bnf.replaceFormula(distributiveLaw(bnf));
+                            updateRoot(f);
+                            q.add(f);
                         }
                         else {
                             q.add(bnf.getLoperand());
@@ -109,14 +111,14 @@ public class FormulaSeparator {
         return f;
     }
 
-    public Formula normalize(Formula f) {
-        while (needsNormalization(f)) {
+    public Formula normalize() {
+        while (needsNormalization(root)) {
         //int i = 1;
         //while(i != 0) {
             //i--;
-            f = applyNormalizations(f);
+            updateRoot(applyNormalizations(root));
         }
-        return f;
+        return root;
     }
 
 

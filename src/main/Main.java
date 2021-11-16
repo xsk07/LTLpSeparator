@@ -69,16 +69,16 @@ public class Main {
                 Formula phi = parseTreeToFormula(parseTree);
                 Formula phic = converter.convert(phi);
                 System.out.println("Formula separation: ");
-                Formula phis = separator.separate(phic);
+                separator.separate(phic);
                 System.out.println("Separation performed.");
                 System.out.println("Normalization of the formula: ");
-                //phis = normalize(phis);
-                //System.out.println("Normalization performed.");
-                //System.out.println("Matrix generation");
+                Formula phin = separator.normalize();
+                System.out.println("Normalization performed.");
+                System.out.println("Matrix generation");
                 //PureFormulaeMatrix m = getPureFormulaeMatrix(phis);
                 //matrixToJsonFile(m);
                 //System.out.println("Matrix generated.");
-                GraphViz gv = phis.fromFormulaToGraphViz();
+                GraphViz gv = phin.fromFormulaToGraphViz();
                 graphVizOutput(gv, outFile, outputEncoding);
             }
             if(cmd.hasOption("c")) {
