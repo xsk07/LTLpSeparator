@@ -10,8 +10,7 @@ public abstract class BooleanRules {
 
     public static boolean needTruthValueNegation(UnaryFormula f) {
         if(f.isOperator(NOT)){
-            if(f.getOperand().isAtomic()){
-                AtomicFormula cf = (AtomicFormula) f.getOperand();
+            if(f.getOperand() instanceof AtomicFormula cf){
                 return (cf.isTruthValue());
             }
         }
@@ -20,8 +19,7 @@ public abstract class BooleanRules {
 
     public static Formula truthValueNegation(UnaryFormula f) {
         if(f.isOperator(NOT)){
-            if(f.getOperand().isAtomic()){
-                AtomicFormula cf = (AtomicFormula) f.getOperand();
+            if(f.getOperand() instanceof AtomicFormula cf){
                 if(cf.getImage().equals(TRUE.getImage())) {
                     return new AtomicFormula(FALSE);
                 }

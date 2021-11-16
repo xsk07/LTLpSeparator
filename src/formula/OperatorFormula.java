@@ -1,18 +1,16 @@
 package formula;
 
-import static formula.TypeConstant.*;
-
 public abstract class OperatorFormula extends Formula {
 
     private Operator operator;
 
     public OperatorFormula(Operator op) {
-        super(OPERATOR);
+        super();
         this.setOperator(op);
     }
 
     public OperatorFormula(Operator op, OperatorFormula p) {
-        super(OPERATOR, p);
+        super(p);
         this.setOperator(op);
     }
 
@@ -28,26 +26,12 @@ public abstract class OperatorFormula extends Formula {
         return operator;
     }
 
-    /** @return Returns true if, and only if, the arity of the operator of the formula is 1 */
-    public boolean isUnary() {
-        return operator.getArity() == 1;
-    }
-
-    /** @return Returns true if, and only if, the arity of the operator of the formula is 2 */
-    public boolean isBinary() {
-        return operator.getArity() == 2;
-    }
-
-    public boolean isParentOf(Formula f){
-        return f.getParent().equals(this);
-    }
+    public boolean isParentOf(Formula f){ return f.getParent() == this; }
 
     public boolean isAncestorOf(Formula f) {
         OperatorFormula p = f.getParent();
-        while (p != null && !p.equals(this)) {
-            p = p.getParent();
-        }
-        return (p != null && p.equals(this));
+        while (p != null && p != this) p = p.getParent();
+        return p == this;
     }
 
     /** @return Returns the image of the top operator of the formula */

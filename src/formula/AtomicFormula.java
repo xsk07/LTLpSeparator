@@ -1,6 +1,5 @@
 package formula;
 
-import static formula.TypeConstant.*;
 import static formula.AtomConstant.*;
 import static formula.TimeConstant.*;
 
@@ -11,7 +10,7 @@ public class AtomicFormula extends Formula {
     private String image;
 
     /* Initialization block:
-     * atomic formulas are always present and separated */
+     * atomic formulae are always present and separated */
     {
         this.setTime(PRESENT);
         this.setSeparation(true);
@@ -20,26 +19,26 @@ public class AtomicFormula extends Formula {
     /** Returns an AtomicFormula created from an AtomConstant.
      * @see AtomConstant */
     public AtomicFormula(AtomConstant c) {
-        super(ATOM);
+        super();
         this.image = c.getImage();
     }
 
     /** Initializes a newly created AtomicFormula from an AtomConstant and a formula which will be its parent.
      * @see AtomConstant */
     public AtomicFormula(AtomConstant c, OperatorFormula p) {
-        super(ATOM, p);
+        super(p);
         this.image = c.getImage();
     }
 
     /** Returns an AtomicFormula created from a string image. */
     public AtomicFormula(String img) {
-        super(ATOM);
+        super();
         this.image = img;
     }
 
     /** Initializes a newly created AtomicFormula from a string image and a formula which will be its parent. */
     public AtomicFormula(String img, OperatorFormula p) {
-        super(ATOM, p);
+        super(p);
         this.image = img;
     }
 
@@ -57,10 +56,7 @@ public class AtomicFormula extends Formula {
         return new AtomicFormula(this.getImage());
     }
 
-    @Override
-    public boolean equals(Formula f) {
-        return f.isAtomic() && this.getImage().equals(f.getImage());
-    }
+    public boolean equalTo(Formula f) {return this.image.equals(f.getImage()); }
 
     /** @return Returns true if, and only if, the formula represents the atomic "true" formula */
     public boolean isTrue(){
@@ -68,13 +64,13 @@ public class AtomicFormula extends Formula {
     }
 
     /** @return Returns true if, and only if, the formula represents the atomic "false" formula */
-    public boolean isFalse(){
-        return image.equals(FALSE.getImage());
-    }
+    public boolean isFalse() { return image.equals(FALSE.getImage()); }
 
     /** @return Returns true if, and only if, the formula represents a truth value */
-    public boolean isTruthValue(){
-        return (this.isTrue() || this.isFalse());
+    public boolean isTruthValue(){ return this.isTrue() || this.isFalse(); }
+
+    public boolean isTruthValue(AtomConstant c) {
+        return this.getImage().equals(c.getImage());
     }
 
 }

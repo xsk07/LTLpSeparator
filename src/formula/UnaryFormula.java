@@ -37,7 +37,7 @@ public class UnaryFormula extends OperatorFormula {
     }
 
     protected void updateTime(Formula o) {
-        if(!this.getOperand().equals(o)) {
+        if(this.getOperand() != o) {
             throw new IllegalArgumentException(
                     "The formula passed as argument must be the operand of this"
             );
@@ -68,17 +68,11 @@ public class UnaryFormula extends OperatorFormula {
         );
     }
 
-    @Override
-    public boolean equals(Formula f) {
-        if(f.isOperator()) {
-            OperatorFormula of = (OperatorFormula) f;
-            if(of.isUnary()){
-                UnaryFormula uf = (UnaryFormula) of;
-                return (
-                        (uf.getOperator().equals(this.getOperator()))
-                        && (uf.getOperand().equals(this.getOperand()))
-                        );
-            }
+    public boolean equalTo(Formula f) {
+        if(f instanceof UnaryFormula uf){
+            boolean sameOperator = uf.getOperator().equals(this.getOperator());
+            boolean equalOperands = uf.getOperand().equalTo(this.getOperand());
+            return sameOperator && equalOperands;
         }
         return false;
     }

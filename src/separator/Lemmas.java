@@ -18,7 +18,7 @@ public abstract class Lemmas {
         if(!(f.getOperator().equals(AND) | f.getOperator().equals(OR)) ) {
             throw new IllegalArgumentException(
                     String.format(
-                            "The operator of the formula should be & or | but is %s",
+                            "The operator of the formula must be '&' or '|' but is '%s'",
                             f.getOperator()
                     )
             );
@@ -36,7 +36,7 @@ public abstract class Lemmas {
                 rc.getRoperand()  // D
         };
 
-        return BinaryFormula.newDisjunction(Arrays.asList(
+        return (BinaryFormula) BinaryFormula.newDisjunction(Arrays.asList(
                 lemmaA1_E1(fms, op), // U(A&C, B&D)
                 lemmaA1_E2(fms, op), // U(A & D & U(C,D), B&D)
                 lemmaA1_E3(fms, op)  // U(C & B & U(A,B), B&D)
@@ -45,7 +45,7 @@ public abstract class Lemmas {
     }
 
     /** E1 = U(A&C, B&D) */
-    private static BinaryFormula lemmaA1_E1(Formula[] fms, Operator op){
+    private static BinaryFormula lemmaA1_E1(Formula[] fms, Operator op) {
         /// U(A&C, B&D)
         return new BinaryFormula(
                 op,  // U
@@ -65,7 +65,7 @@ public abstract class Lemmas {
     }
 
     /** E2 = U(A & D & U(C,D), B&D) */
-    private static BinaryFormula lemmaA1_E2(Formula[] fms, Operator op){
+    private static BinaryFormula lemmaA1_E2(Formula[] fms, Operator op) {
         // U(A & D & U(C,D), B&D)
         return new BinaryFormula(
                 op, // U
@@ -91,7 +91,7 @@ public abstract class Lemmas {
     }
 
     /** E3 = U(C & B & U(A,B), B&D) */
-    private static BinaryFormula lemmaA1_E3(Formula[] fms, Operator op){
+    private static BinaryFormula lemmaA1_E3(Formula[] fms, Operator op) {
         // U(C & B & U(A,B), B&D)
         return new BinaryFormula(
                 op, // U
@@ -117,12 +117,13 @@ public abstract class Lemmas {
     }
 
 
+    /** Returns true if, and only if, f needs the application of the Lemma A2 */
     public static boolean needsLemmaA2(BinaryFormula f) {
 
         if(!(f.getOperator().equals(SINCE) || f.getOperator().equals(UNTIL))){
             throw new IllegalArgumentException(
                     String.format(
-                            "The operator of the formula should be S or U but is %s",
+                            "The operator of the formula must be 'U' or 'S' but is '%s'",
                             f.getOperator()
                     )
             );
@@ -130,6 +131,8 @@ public abstract class Lemmas {
         return (needsLemmaA2AND(f) || needsLemmaA2OR(f));
     }
 
+    /** Returns true if, and only if, the formula needs the application of the Lemma A2 because of
+      * the left operand that has the operator OR */
     public static boolean needsLemmaA2OR(BinaryFormula f) {
         return (
                 (f.getOperator().equals(SINCE) || f.getOperator().equals(UNTIL))
@@ -137,6 +140,8 @@ public abstract class Lemmas {
         );
     }
 
+    /** Returns true if, and only if, the formula needs the application of the Lemma A2 because of
+     * the right operand that has the operator AND */
     public static boolean needsLemmaA2AND(BinaryFormula f) {
         return (
                 (f.getOperator().equals(SINCE) || f.getOperator().equals(UNTIL))
@@ -144,27 +149,27 @@ public abstract class Lemmas {
         );
     }
 
-    /** ((A|B) U C) =>* (AUC) | (BUC) */
+    /** U((A|B), C) =>* U(A,C) | U(B,C) */
     public static BinaryFormula lemmaA2(BinaryFormula f) {
 
         if(!(f.getOperator().equals(SINCE) || f.getOperator().equals(UNTIL))){
             throw new IllegalArgumentException(
                     String.format(
-                            "The operator of the formula should be S or U but is %s",
+                            "The operator of the formula must be 'U' or 'S' but is '%s'",
                             f.getOperator()
                     )
             );
         }
 
-        // ((A|B) U C) =>* (AUC) | (BUC)
+        // U((A|B), C) =>* U(A,C) | U(B,C)
         if(f.getLoperand().isOperator(OR)) return lemmaA2OR(f);
 
-        // (A U (B&C)) =>* (AUB) & (AUC)
+        // U(A, (B&C)) =>* U(A,B) & U(A,C)
         if(f.getRoperand().isOperator(AND)) return lemmaA2AND(f);
 
         else throw new IllegalArgumentException(
                 String.format(
-                        "The operator of the left child of the formula should be an OR but is %s " +
+                        "The operator of the left child of the formula must be an '|' but is '%s' " +
                                 "or the operator of the right child of the formula should be an AND but is %s ",
                         f.getLoperand().getImage(),
                         f.getRoperand().getImage()
@@ -177,26 +182,26 @@ public abstract class Lemmas {
 
             throw new IllegalArgumentException (
                     String.format(
-                            "The operator of the formula should be S or U but is %s",
+                            "The operator of the formula must be 'U' or 'S' but is '%s'",
                             f.getOperator()
                     )
             );
         }
 
-        // ((A|B) U C) =>* (AUC) | (BUC)
+        // U((A|B), C) =>* U(A,C) | U(B,C)
         if(f.getLoperand().isOperator(OR)) {
             BinaryFormula lf = (BinaryFormula) f.getLoperand();
             System.out.println("LemmaA2");
-            // (AUC)|(BUC)
+            // U(A,C) | U(B,C)
             return new BinaryFormula (
                     OR,
-                    // AUC
+                    // U(A,C)
                     new BinaryFormula(
                             f.getOperator(), // U
                             lf.getLoperand(), // A
                             f.getRoperand().deepCopy() // C
                     ),
-                    // BUC
+                    // U(B,C)
                     new BinaryFormula(
                             f.getOperator(), // U
                             lf.getRoperand(), // B
@@ -207,7 +212,7 @@ public abstract class Lemmas {
 
 
         else throw new IllegalArgumentException (
-                "The operator of the left child of the formula should be an OR"
+                "The operator of the left child of the formula must be an '|'"
         );
     }
 
@@ -223,20 +228,20 @@ public abstract class Lemmas {
         }
 
 
-        // (A U (B&C)) =>* (AUB) & (AUC)
+        // U(A, (B&C)) =>* U(A,B) & U(A,C)
         if(f.getRoperand().isOperator(AND)){
             BinaryFormula rf = (BinaryFormula) f.getRoperand();
             System.out.println("LemmaA2");
-            // (AUB) & (AUC)
+            // U(A,B) & U(A,C)
             return new BinaryFormula(
                     AND,
-                    // AUB
+                    // U(A,B)
                     new BinaryFormula(
                             f.getOperator(), // U
                             f.getLoperand().deepCopy(), // A
                             rf.getLoperand() // B
                     ),
-                    // AUC
+                    // U(A,C)
                     new BinaryFormula(
                             f.getOperator(), // U
                             f.getLoperand().deepCopy(), // A
@@ -270,7 +275,7 @@ public abstract class Lemmas {
         BinaryFormula lc = (BinaryFormula) f.getLoperand();
         BinaryFormula rc = (BinaryFormula) f.getRoperand();
         boolean operatorIsAnd = f.getOperator().equals(AND);
-        boolean sameLeftChild = lc.getLoperand().equals(rc.getLoperand());
+        boolean sameLeftChild = lc.getLoperand().equalTo(rc.getLoperand());
         return operatorIsAnd && sameLeftChild;
     }
 
@@ -278,7 +283,7 @@ public abstract class Lemmas {
         BinaryFormula lc = (BinaryFormula) f.getLoperand();
         BinaryFormula rc = (BinaryFormula) f.getRoperand();
         boolean operatorIsOr = f.getOperator().equals(OR);
-        boolean sameRightChild = lc.getRoperand().equals(rc.getRoperand());
+        boolean sameRightChild = lc.getRoperand().equalTo(rc.getRoperand());
         return operatorIsOr && sameRightChild;
     }
 
@@ -305,7 +310,7 @@ public abstract class Lemmas {
             );
         }
 
-        if(!(lc.getLoperand().equals(rc.getLoperand()))) {
+        if(!(lc.getLoperand().equalTo(rc.getLoperand()))) {
             throw new IllegalArgumentException (
                     "The first operator of the two children had to be the same"
             );
@@ -321,39 +326,39 @@ public abstract class Lemmas {
 
     }
 
-    /** (aUb)&(aUc) =>* aU(b&c) */
+    /** U(A,B) & U(A,C) =>* U(A, B&C) */
     private static BinaryFormula andReversedLemmaA2(BinaryFormula f) {
-        BinaryFormula lc = (BinaryFormula) f.getLoperand(); // aUb
-        BinaryFormula rc = (BinaryFormula) f.getRoperand(); // aUc
+        BinaryFormula lc = (BinaryFormula) f.getLoperand(); // U(A,B)
+        BinaryFormula rc = (BinaryFormula) f.getRoperand(); // U(A,C)
         Operator op = lc.getOperator(); // U
-        // aU(b&c)
+        // U(A, B&C)
         return new BinaryFormula (
                 op, // U
-                lc.getLoperand(), // a
-                // b&c
+                lc.getLoperand(), // A
+                // B&C
                 new BinaryFormula(
                         f.getOperator(),  // &
-                        lc.getRoperand(), // b
-                        rc.getRoperand()  // c
+                        lc.getRoperand(), // B
+                        rc.getRoperand()  // C
                 )
         );
     }
 
-    /** (aUc)|(bUc) =>* (a|b)Uc */
+    /** U(A,C) | U(B,C) =>* U(A|B, C) */
     private static BinaryFormula orReversedLemmaA2(BinaryFormula f) {
-        BinaryFormula lc = (BinaryFormula) f.getLoperand(); // aUc
-        BinaryFormula rc = (BinaryFormula) f.getRoperand(); // bUc
+        BinaryFormula lc = (BinaryFormula) f.getLoperand(); // U(A,C)
+        BinaryFormula rc = (BinaryFormula) f.getRoperand(); // U(B,C)
         Operator op = lc.getOperator(); // U
-        // (a|b)Uc
+        // U(A|B, C)
         return new BinaryFormula (
                 op, // U
-                // a|b
+                // A|B
                 new BinaryFormula(
                         f.getOperator(),  // |
-                        lc.getLoperand(), // a
-                        rc.getLoperand()  // b
+                        lc.getLoperand(), // A
+                        rc.getLoperand()  // B
                 ),
-                lc.getRoperand() // c
+                lc.getRoperand() // C
         );
     }
 

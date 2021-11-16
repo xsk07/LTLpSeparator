@@ -1,22 +1,19 @@
 package formula;
 
 import graphviz.GraphViz;
+import parser.SimpleNode;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
 import static formula.Operator.*;
 import static formula.TimeConstant.*;
-import static formula.TypeConstant.*;
 
 /** The Formula class represents a generic LTL formula. */
 public abstract class Formula {
 
     /** The parent of the formula */
     private OperatorFormula parent;
-
-    /** The type of the formula */
-    private final TypeConstant type;
 
     /** The time of the formula, it is:
      *  PAST if, and only if, the formula is pure past;
@@ -28,19 +25,83 @@ public abstract class Formula {
     /** It is true if, and only, if the formula is separated, false otherwise. */
     private boolean separated;
 
-    /** Initializes a newly created Formula with type t.
-     * @param t the type of the formula */
-    public Formula(TypeConstant t) {
+    /** Initializes a newly created Formula with type t.*/
+    public Formula() {
         this.parent = null;
-        this.type = t;
     }
 
     /** Initializes a newly created Formula with type t and parent p.
-     * @param t the type of the formula
      * @param p the parent of the formula */
-    public Formula(TypeConstant t, OperatorFormula p) {
+    public Formula(OperatorFormula p) {
         this.setParent(p);
-        this.type = t;
+    }
+
+    public static Formula parseTreeToFormula(SimpleNode parseTree) {
+        if(parseTree.getId() == 0) return fromSimpleNodeToFormula(parseTree);
+        throw new IllegalArgumentException("The parameter must be the root node of the parse tree");
+    }
+
+    /** Translates a parse tree, consisting of an instance of the SimpleNode class,
+     * into an instance of the Formula class.
+     * @return Returns a formula which is the translated form of the parse tree on which the method was called
+     * @see formula.Formula */
+    private static Formula fromSimpleNodeToFormula(SimpleNode node) throws IllegalArgumentException {
+
+        switch(node.getId()) {
+            case 0: { //INPUT
+                /* Jump the Input node and return, as the root of the formula, the
+                formula translation of its unique child */
+                SimpleNode c = (SimpleNode) node.jjtGetChild(0);
+                return fromSimpleNodeToFormula(c);
+            }
+            // ALL BINARY
+            case 2:
+            case 3:
+            case 4:
+            case 5: return translateBinaryNode(node);
+            case 6: {
+                BinaryFormula bf = translateBinaryNode(node);
+                bf.swapChildren();
+                return bf;
+            }
+            case 7: { //UNARY
+                SimpleNode c = (SimpleNode) node.jjtGetChild(0);
+                String img = node.jjtGetValue();
+                /* the input formulas are expressed in infix notation
+                 * while the program logic uses the prefix one,
+                 * hence to preserve inside the program the same meaning
+                 * of the input formulae it is needed to swap the two children */
+                return new UnaryFormula(
+                        fromString(img),
+                        fromSimpleNodeToFormula(c)
+                );
+            }
+            case 8: { //ATOM
+                /* return an atomic formula with the same image of the node n */
+                return new AtomicFormula(node.jjtGetValue());
+            }
+            default: throw new IllegalArgumentException(
+                    String.format("The node should have an id value between 0 and 8, but it has %s", node.getId())
+            );
+        }
+    }
+
+    /** A fromSimpleNodeToFormula subroutine.
+     * Translates a SimpleNode, with an id corresponding to a binary operator,
+     * into an equivalent formula.
+     * @param n The SimpleNode to translate
+     * @return Returns the translation of the node into a node of the formula AST
+     * @see #fromSimpleNodeToFormula(SimpleNode)
+     * */
+    private static BinaryFormula translateBinaryNode(SimpleNode n) {
+        SimpleNode lc = (SimpleNode) n.jjtGetChild(0); // left child of n
+        SimpleNode rc = (SimpleNode) n.jjtGetChild(1); // right child of n
+        Operator op = fromString(n.jjtGetValue());
+        return new BinaryFormula(
+                op,
+                fromSimpleNodeToFormula(lc), // translation of the left child
+                fromSimpleNodeToFormula(rc)  // translation of the right child
+        );
     }
 
     /** Sets the parent of the formula
@@ -89,64 +150,42 @@ public abstract class Formula {
                 p = p.getParent();
             }
         }
-
     }
 
     public void debugSeparationPrint() {
         System.out.println("formula: " + this + " separated: " + this.getSeparation());
-        if(this.isOperator()){
-            OperatorFormula ot = (OperatorFormula) this;
-            if(ot.isUnary()){
-                UnaryFormula ut= (UnaryFormula) ot;
-                ut.getOperand().debugSeparationPrint();
-            }
-            if(ot.isBinary()){
-                BinaryFormula bt = (BinaryFormula) ot;
-                System.out.println("lc separation: " + bt.getLoperand().getSeparation());
-                System.out.println("rc separation: " + bt.getRoperand().getSeparation());
-                bt.getLoperand().debugSeparationPrint();
-                bt.getRoperand().debugSeparationPrint();
-            }
+        if(this instanceof UnaryFormula uThis) uThis.getOperand().debugSeparationPrint();
+        if(this instanceof BinaryFormula bThis){
+            System.out.println("lc separation: " + bThis.getLoperand().getSeparation());
+            System.out.println("rc separation: " + bThis.getRoperand().getSeparation());
+            bThis.getLoperand().debugSeparationPrint();
+            bThis.getRoperand().debugSeparationPrint();
         }
     }
 
     public void debugTimePrint() {
         System.out.println("formula: " + this + " time: " + this.getTime());
-        if(this.isOperator()){
-            OperatorFormula ot = (OperatorFormula) this;
-            if(ot.isUnary()){
-                UnaryFormula ut= (UnaryFormula) ot;
-                ut.getOperand().debugTimePrint();
-            }
-            if(ot.isBinary()){
-                BinaryFormula bt = (BinaryFormula) ot;
-                System.out.println("op time:" + bt.getOperator().getTime());
-                System.out.println("lc time:" + bt.getLoperand().getTime());
-                System.out.println("rc time:" + bt.getRoperand().getTime());
-                bt.getLoperand().debugTimePrint();
-                bt.getRoperand().debugTimePrint();
-            }
+        if(this instanceof UnaryFormula ut) ut.getOperand().debugTimePrint();
+        if(this instanceof BinaryFormula bt){
+            System.out.println("op time:" + bt.getOperator().getTime());
+            System.out.println("lc time:" + bt.getLoperand().getTime());
+            System.out.println("rc time:" + bt.getRoperand().getTime());
+            bt.getLoperand().debugTimePrint();
+            bt.getRoperand().debugTimePrint();
         }
     }
+
+    public abstract boolean equalTo(Formula f);
 
     /** @return Returns the parent of the formula */
     public OperatorFormula getParent(){ return this.parent; }
 
-    /** @return Returns a TypeConstant which is type of the formula
-     * @see TypeConstant*/
-    public TypeConstant getType(){ return type; }
-
-    /** @return Returns true if, and only if, the type of the formula is OPERATOR */
-    public boolean isOperator() { return type == OPERATOR; }
 
     /** @return Returns true if, and only if, the type of the formula is OPERATOR and
      * its image corresponds to the image of the operator op */
     public boolean isOperator(Operator op){
-        return this.isOperator() && Objects.equals(this.getImage(), op.getImage());
+        return this instanceof OperatorFormula && Objects.equals(this.getImage(), op.getImage());
     }
-
-    /** @return Returns true if, and only if, the type of the formula is ATOM */
-    public boolean isAtomic() { return type == ATOM; }
 
     /** @return Returns a deep copy of the formula */
     public abstract Formula deepCopy();
@@ -157,19 +196,16 @@ public abstract class Formula {
     /** @return Returns the string image of the formula */
     public abstract String getImage();
 
-    /** @return Returns true if, and only if, this equals f */
-    public abstract boolean equals(Formula f);
-
     /** @return Returns true if, and only if, this is the left child of the formula got in input
      * @param f the binary formula on which perform the check */
     public boolean isLeftChildOf(BinaryFormula f){
-        return Objects.equals(this, f.getLoperand());
+        return this == f.getLoperand();
     }
 
     /** @return Returns true if, and only if, this is the right child of the formula got in input
      * @param f the BinaryFormula on which perform the check */
     public boolean isRightChildOf(BinaryFormula f){
-        return Objects.equals(this, f.getRoperand());
+        return this == f.getRoperand();
     }
 
     /** @return Returns true if, and only if, this is one of the two children of the formula got in input
@@ -188,21 +224,21 @@ public abstract class Formula {
     public boolean isInRightSubtreeOf(BinaryFormula f) {
         Formula nf = this;
         while(nf.getParent() != f && nf.getParent() != null) nf = nf.getParent();
-        return (nf.getParent() != null && nf.getParent().equals(f) && nf.equals(f.getRoperand()));
+        return (nf.getParent() != null && nf.getParent() == f && nf == f.getRoperand());
     }
 
     /** @return Returns true if, and only if, this is in the left subtree of f */
     public boolean isInLeftSubtreeOf(BinaryFormula f){
         Formula nf = this;
         while(nf.getParent() != f && nf.getParent() != null) nf = nf.getParent();
-        return (nf.getParent() != null && nf.getParent().equals(f) && nf.equals(f.getLoperand()));
+        return (nf.getParent() != null && nf.getParent() == f && nf == f.getLoperand());
     }
 
 
     public boolean isNestedInside(OperatorFormula f) {
         Formula t = this;
         while(t.getParent() != null && t.getParent() != f) t = t.getParent();
-        return (t.getParent() != null && t.getParent().equals(f));
+        return (t.getParent() != null && t.getParent() == f);
     }
 
     public void setTime(TimeConstant t){
@@ -223,12 +259,6 @@ public abstract class Formula {
 
     public boolean needSeparation(){ return !separated; }
 
-    public boolean isNestedInsideOperator(Operator op) {
-        Formula nf = this;
-        while(nf!= null && !nf.isOperator(op)){ nf = nf.getParent(); }
-        if(nf != null) return nf.isOperator(op);
-        return false;
-    }
 
     /** Replaces the formula with another one.
      * @param f the formula which must take the place of the one on which the method was called
@@ -239,35 +269,14 @@ public abstract class Formula {
             f.setParent(null);
             return f;
         }
-        if(p.isUnary()) {
-            UnaryFormula up = (UnaryFormula) p;
-            up.setOperand(f);
-        }
-        if(p.isBinary()) {
-            BinaryFormula bp = (BinaryFormula) p;
+        if(p instanceof UnaryFormula up) up.setOperand(f);
+
+        if(p instanceof BinaryFormula bp) {
             if(this.isLeftChildOf(bp)) bp.setLoperand(f);
             if(this.isRightChildOf(bp)) bp.setRoperand(f);
         }
         return f;
     }
-
-    /** Searches among the ancestors of the formula a node whose
-     * operator is the same of the parameter op.
-     * @return an ancestor of the formula whose operator is op
-     * or null if it is not present
-     * @param op the operator on which the search is based on */
-    public OperatorFormula searchAncestor(Operator op) {
-        OperatorFormula np = this.getParent();
-        while(np != null && !np.isOperator(op)) np = np.getParent();
-        return np;
-    }
-
-    public OperatorFormula searchFirstTempAncestor() {
-        OperatorFormula np = this.getParent();
-        while(np != null && !np.isOperator(UNTIL) && !np.isOperator(SINCE)) np = np.getParent();
-        return np;
-    }
-
 
     public boolean containsOperatorOfTime(TimeConstant t) {
         Queue<Formula> q = new LinkedList<>();
@@ -279,8 +288,7 @@ public abstract class Formula {
             if(f.isPure(t)) return true;
             /* if f is an OperatorFormula and is not pure (MIXED),
              * it might contain a PAST operator */
-            if(f.isOperator() && !f.isPure()) {
-                OperatorFormula of = (OperatorFormula) f;
+            if(f instanceof OperatorFormula of && !f.isPure()) {
                 /* if the operator of the formula has time t then
                  * return true (this is the case when the method is
                  * called on a formula that has as operator the searched one) */
@@ -289,14 +297,12 @@ public abstract class Formula {
                 }
                 /* if it is a UnaryFormula then continue the search
                  * on its child */
-                if(of.isUnary()) {
-                    UnaryFormula uf = (UnaryFormula) of;
+                if(of instanceof UnaryFormula uf) {
                     q.add(uf.getOperand());
                 }
                 /* if it is a UnaryFormula then continue the search
                  * on its two children */
-                if(of.isBinary()) {
-                    BinaryFormula bf = (BinaryFormula) of;
+                if(of instanceof BinaryFormula bf) {
                     if(bf.getLoperand() != null) q.add(bf.getLoperand());
                     if(bf.getRoperand() != null) q.add(bf.getRoperand());
                 }
@@ -315,19 +321,16 @@ public abstract class Formula {
         q.add(this);
         while(!q.isEmpty()) {
             Formula f = q.remove();
-            if(f.isOperator()) {
-                OperatorFormula of = (OperatorFormula) f;
+            if(f instanceof OperatorFormula of) {
                 if(of.isOperator(op)) return of;
                 switch (op.getTime()) {
                     case PAST : {
                         switch (of.getTime()) {
                             case PAST, MIXED: {
-                                if(of.isUnary()) {
-                                    UnaryFormula uf = (UnaryFormula) of;
+                                if(of instanceof UnaryFormula uf) {
                                     q.add(uf.getOperand());
                                 }
-                                if(of.isBinary()) {
-                                    BinaryFormula bf = (BinaryFormula) of;
+                                if(of instanceof BinaryFormula bf) {
                                     q.add(bf.getLoperand());
                                     q.add(bf.getRoperand());
                                 }
@@ -338,12 +341,10 @@ public abstract class Formula {
                         break;
                     }
                     case PRESENT: {
-                        if(of.isUnary()) {
-                            UnaryFormula uf = (UnaryFormula) of;
+                        if(of instanceof UnaryFormula uf) {
                             q.add(uf.getOperand());
                         }
-                        if(of.isBinary()) {
-                            BinaryFormula bf = (BinaryFormula) of;
+                        if(of instanceof BinaryFormula bf) {
                             q.add(bf.getLoperand());
                             q.add(bf.getRoperand());
                         }
@@ -352,12 +353,10 @@ public abstract class Formula {
                     case FUTURE:  {
                         switch (op.getTime()) {
                             case FUTURE, MIXED: {
-                                if(of.isUnary()) {
-                                    UnaryFormula uf = (UnaryFormula) of;
+                                if(of instanceof UnaryFormula uf) {
                                     q.add(uf.getOperand());
                                 }
-                                if(of.isBinary()) {
-                                    BinaryFormula bf = (BinaryFormula) of;
+                                if(of instanceof BinaryFormula bf) {
                                     q.add(bf.getLoperand());
                                     q.add(bf.getRoperand());
                                 }
@@ -379,19 +378,16 @@ public abstract class Formula {
         q.add(this);
         while(!q.isEmpty()) {
             Formula f = q.remove();
-            if(f.isOperator()) {
-                OperatorFormula of = (OperatorFormula) f;
+            if(f instanceof OperatorFormula of) {
                 if(of.isOperator(op)) r.add(of);
                 else switch (op.getTime()) {
                     case PAST : {
                         switch (of.getTime()) {
                             case PAST, MIXED: {
-                                if(of.isUnary()) {
-                                    UnaryFormula uf = (UnaryFormula) of;
+                                if(of instanceof UnaryFormula uf) {
                                     q.add(uf.getOperand());
                                 }
-                                if(of.isBinary()) {
-                                    BinaryFormula bf = (BinaryFormula) of;
+                                if(of instanceof BinaryFormula bf) {
                                     q.add(bf.getLoperand());
                                     q.add(bf.getRoperand());
                                 }
@@ -402,12 +398,10 @@ public abstract class Formula {
                         break;
                     }
                     case PRESENT: {
-                        if(of.isUnary()) {
-                            UnaryFormula uf = (UnaryFormula) of;
+                        if(of instanceof UnaryFormula uf) {
                             q.add(uf.getOperand());
                         }
-                        if(of.isBinary()) {
-                            BinaryFormula bf = (BinaryFormula) of;
+                        if(of instanceof BinaryFormula bf) {
                             q.add(bf.getLoperand());
                             q.add(bf.getRoperand());
                         }
@@ -416,12 +410,10 @@ public abstract class Formula {
                     case FUTURE:  {
                         switch (op.getTime()) {
                             case FUTURE, MIXED: {
-                                if(of.isUnary()) {
-                                    UnaryFormula uf = (UnaryFormula) of;
+                                if(of instanceof UnaryFormula uf) {
                                     q.add(uf.getOperand());
                                 }
-                                if(of.isBinary()) {
-                                    BinaryFormula bf = (BinaryFormula) of;
+                                if(of instanceof BinaryFormula bf) {
                                     q.add(bf.getLoperand());
                                     q.add(bf.getRoperand());
                                 }
@@ -437,18 +429,15 @@ public abstract class Formula {
         return r;
     }
 
+
+    public static boolean opposite(Formula f1, Formula f2) {
+        return f1.isNegationOf(f2) || f2.isNegationOf(f1);
+    }
+
     public boolean isNegationOf(Formula f) {
-        return this.equals(BooleanRules.negate(f.deepCopy()));
+        if(this instanceof UnaryFormula ut) return ut.getOperand().equalTo(f);
+        return false;
     }
-
-    public Formula searchSameOperatorFormula(OperatorFormula phi) {
-        ArrayList<OperatorFormula> al = this.searchOperators(phi.getOperator());
-        for (OperatorFormula f : al) {
-            if(f != phi) return f;
-        }
-        return null;
-    }
-
 
     /** Translates a formula into an object of the GraphViz class.
      * @return Returns the GraphViz representation of the formula f
@@ -456,11 +445,11 @@ public abstract class Formula {
     public GraphViz fromFormulaToGraphViz() {
         GraphViz gv = new GraphViz();
         gv.add("graph G {");
-        if(this.isAtomic()) {
+        if(this instanceof AtomicFormula) {
             gv.addln(this.getImage() + ";");
         }
-        if(this.isOperator()) {
-            operatorFormulaGraphViz(gv, (OperatorFormula) this);
+        if(this instanceof OperatorFormula ot) {
+            operatorFormulaGraphViz(gv, ot);
         }
         gv.addln(gv.end_graph());
         return gv;
@@ -470,23 +459,23 @@ public abstract class Formula {
      * @see #fromFormulaToGraphViz()
      * @see GraphViz */
     private static void operatorFormulaGraphViz(GraphViz gv, OperatorFormula f){
-        if(f.isUnary()) {
-            Formula c = ((UnaryFormula) f).getOperand();
+        if(f instanceof UnaryFormula uf) {
+            Formula c = uf.getOperand();
             gv.addln(f.hashCode() + " [label=\"" + f.getImage() + "\"]" + ";");
             gv.addln(c.hashCode() + " [label=\"" + c.getImage() + "\"]" + ";");
             gv.addln(f.hashCode() + "--" + c.hashCode() + ";");
-            if(c.isOperator()) operatorFormulaGraphViz(gv, (OperatorFormula) c);
+            if(c instanceof OperatorFormula oc) operatorFormulaGraphViz(gv, oc);
         }
-        if(f.isBinary()) {
-            Formula lc = ((BinaryFormula) f).getLoperand();
-            Formula rc = ((BinaryFormula) f).getRoperand();
+        if(f instanceof BinaryFormula bf) {
+            Formula lc = bf.getLoperand();
+            Formula rc = bf.getRoperand();
             gv.addln(f.hashCode() + " [ " +  nodeDebugColor(f) + "label=\""  + f.getImage() + "\"]" + ";");
             gv.addln(lc.hashCode() + " [ " + nodeDebugColor(lc) + "label=\""  + lc.getImage() + "\"]" + ";");
             gv.addln(rc.hashCode() +" [ " + nodeDebugColor(rc) + "label=\"" +  rc.getImage() + "\"]" + ";");
             gv.addln(f.hashCode() + "--" + lc.hashCode() + ";");
-            if(lc.isOperator()) operatorFormulaGraphViz(gv, (OperatorFormula) lc);
+            if(lc instanceof OperatorFormula olc) operatorFormulaGraphViz(gv, olc);
             gv.addln(f.hashCode() + "--" + rc.hashCode() + ";");
-            if(rc.isOperator()) operatorFormulaGraphViz(gv, (OperatorFormula) rc);
+            if(rc instanceof OperatorFormula orc) operatorFormulaGraphViz(gv, orc);
         }
     }
 

@@ -27,33 +27,27 @@ public class FormulaConverter {
         Stack<Formula> stack = new Stack<>();
         Queue<Formula> queue = new LinkedList<>();
         /* if phi is an OperatorFormula then initialize the queue with it */
-        if(phi.isOperator()) queue.add(phi);
+        if(phi instanceof OperatorFormula) queue.add(phi);
 
         while(!queue.isEmpty()) {
             OperatorFormula f = (OperatorFormula) queue.remove();
             if(f.getOperator().isDerived()) stack.push(f);
-            if(f.isUnary()) {
-                UnaryFormula uf = (UnaryFormula) f;
-                if(uf.getOperand().isOperator()) queue.add(uf.getOperand());
+            if(f instanceof UnaryFormula uf) {
+                if(uf.getOperand() instanceof OperatorFormula) queue.add(uf.getOperand());
             }
-            if(f.isBinary()) {
-                BinaryFormula bf = (BinaryFormula) f;
-                if(bf.getLoperand().isOperator()) queue.add(bf.getLoperand());
-                if(bf.getRoperand().isOperator()) queue.add(bf.getRoperand());
+            if(f instanceof BinaryFormula bf) {
+                if(bf.getLoperand() instanceof OperatorFormula) queue.add(bf.getLoperand());
+                if(bf.getRoperand() instanceof OperatorFormula) queue.add(bf.getRoperand());
             }
         }
 
         while(!stack.isEmpty()) {
             OperatorFormula f = (OperatorFormula) stack.pop();
-            if(f.isUnary()) updateRoot(
-                    f.replaceFormula(
-                            applyUnaryRule((UnaryFormula) f)
-                    )
+            if(f instanceof UnaryFormula uf) updateRoot(
+                    f.replaceFormula(applyUnaryRule(uf))
             );
-            else if(f.isBinary()) updateRoot(
-                    f.replaceFormula(
-                            applyBinaryRule((BinaryFormula) f)
-                    )
+            else if(f instanceof BinaryFormula bf) updateRoot(
+                    f.replaceFormula(applyBinaryRule(bf))
             );
         }
 

@@ -1,7 +1,6 @@
 package formula;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 import static formula.Operator.*;
 import static formula.TimeConstant.*;
 
@@ -51,7 +50,7 @@ public class BinaryFormula extends OperatorFormula {
     protected void updateTime(Formula f) {
         if(!f.isChildOf(this)) {
             throw new IllegalArgumentException(
-                    "The formula passed as argument should be one of the two children of this"
+                    "The formula passed as argument must be one of the two children of this"
             );
         }
         /* if the formula f was set as the left child then
@@ -120,15 +119,16 @@ public class BinaryFormula extends OperatorFormula {
         return this.getRoperand() == f;
     }
 
+
     @Override
     public String toString() {
 
         String leftChild = this.getLoperand().toString();
         String rightChild = this.getRoperand().toString();
-        if(this.getLoperand().isOperator()) {
+        if(this.getLoperand() instanceof OperatorFormula) {
             leftChild = String.format("(%s)", this.getLoperand().toString());
         }
-        if(this.getRoperand().isOperator()) {
+        if(this.getRoperand() instanceof OperatorFormula) {
             rightChild = String.format("(%s)", this.getRoperand().toString());
         }
 
@@ -142,7 +142,7 @@ public class BinaryFormula extends OperatorFormula {
     }
 
     @Override
-    public BinaryFormula deepCopy(){
+    public BinaryFormula deepCopy() {
         return new BinaryFormula(
                 this.getOperator(),
                 this.loperand.deepCopy(),
@@ -157,23 +157,40 @@ public class BinaryFormula extends OperatorFormula {
         this.roperand = temp;
     }
 
-    @Override
-    public boolean equals(Formula f) {
-        if(f.isOperator()) {
-            OperatorFormula of = (OperatorFormula) f;
-            if(of.isBinary()){
-                BinaryFormula bf = (BinaryFormula) of;
-                return (
-                        (bf.isOperator(this.getOperator()))
-                                && (bf.getLoperand().equals(this.getLoperand()))
-                                && (bf.getRoperand().equals(this.getRoperand()))
-                );
+    public boolean equalTo(Formula f) {
+        if(f instanceof OperatorFormula of) {
+            if(of instanceof BinaryFormula bf){
+                boolean sameOperator = bf.isOperator(this.getOperator());
+                boolean sameLeftOperand = bf.getLoperand().equalTo(this.getLoperand());
+                boolean sameRightOperand = bf.getRoperand().equalTo(this.getRoperand());
+                boolean sameOperands = sameLeftOperand && sameRightOperand;
+                if(this.isOperator(AND) || this.isOperator(OR) || this.isOperator(EQUIV)) {
+                    sameOperands = this.equalCombinations(bf);
+                }
+                return sameOperator && sameOperands;
             }
         }
         return false;
     }
 
-    public boolean isNestedInsideMirror(){
+    private boolean equalCombinations(BinaryFormula f) {
+        ArrayList<Formula> fOperands = f.getCombinationOperands();
+        ArrayList<Formula> tOperands = this.getCombinationOperands();
+        if(fOperands.size() == tOperands.size()) {
+            tOperands.forEach(t -> {
+                for(Formula af : fOperands) {
+                    if(af.equalTo(t)) {
+                        fOperands.remove(af);
+                        break;
+                    }
+                }
+            } );
+            return fOperands.isEmpty();
+        }
+        return false;
+    }
+
+    public boolean isNestedInsideMirror() {
         if(this.isOperator(UNTIL) || this.isOperator(Operator.SINCE)){
             Formula nf = this;
             while(nf!= null && !nf.isOperator(this.getOperator().getMirrorOperator())){
@@ -189,16 +206,21 @@ public class BinaryFormula extends OperatorFormula {
       * @param fms a Collection of formulas
       * @return a new BinaryFormula that is the disjunction of the formulas of the collection
       * got in input */
-    public static BinaryFormula newDisjunction(Collection<Formula> fms) {
-        return combine(OR, fms);
+    public static Formula newDisjunction(Collection<Formula> fms) {
+        return newCombination(OR, fms);
     }
 
     /** Returns a new BinaryFormula that is the conjunction of the formulas got in input
      * @param fms a Collection of formulas
      * @return a new BinaryFormula that is the conjunction of the formulas of the collection
      * got in input */
-    public static BinaryFormula newConjunction(Collection<Formula> fms) {
-        return combine(AND, fms);
+    public static Formula newConjunction(Collection<Formula> fms) {
+        return newCombination(AND, fms);
+    }
+
+    public static Formula newCombination(Operator op, Collection<Formula> fms) {
+        if(fms.size() == 1) return fms.iterator().next();
+        return combine(op, fms);
     }
 
     private static BinaryFormula combine(Operator op, Collection<Formula> fms) {
@@ -210,8 +232,30 @@ public class BinaryFormula extends OperatorFormula {
         );
         Iterator<Formula> itr = fms.iterator();
         Formula prev = itr.next();
-        while (itr.hasNext()) prev = new BinaryFormula(op, prev, itr.next());
+        while (itr.hasNext()) prev = new BinaryFormula(op, prev.deepCopy(), itr.next().deepCopy());
         return (BinaryFormula) prev;
+    }
+
+    public ArrayList<Formula> getCombinationOperands() {
+        ArrayList<Formula> al = new ArrayList<>();
+        Queue<BinaryFormula> q = new LinkedList<>();
+        q.add(this);
+        while(!q.isEmpty()) {
+            BinaryFormula nf = q.remove();
+            /* if the left operand have the same operator of the root add it to the
+             * loop queue else add it to the result array list */
+            if(nf.getLoperand().isOperator(this.getOperator())) {
+                q.add((BinaryFormula) nf.getLoperand());
+            }
+            else al.add(nf.getLoperand());
+            /* if the right operand have the same operator of the root add it to the
+             * loop queue else add it to the result array list */
+            if(nf.getRoperand().isOperator(this.getOperator())) {
+                q.add((BinaryFormula) nf.getRoperand());
+            }
+            else al.add(nf.getRoperand());
+        }
+        return al;
     }
 
 }
