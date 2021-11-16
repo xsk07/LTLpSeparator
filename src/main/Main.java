@@ -8,13 +8,14 @@ import parser.ParseException;
 import parser.Parser;
 import parser.SimpleNode;
 import separator.FormulaSeparator;
+import separator.PureFormulaeMatrix;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 import static formula.Formula.parseTreeToFormula;
 import static params.InputManager.readFile;
 import static params.OptionsManager.initializeOptions;
-import static params.OutputManager.graphVizOutput;
+import static params.OutputManager.*;
 
 public class Main {
 
@@ -69,17 +70,18 @@ public class Main {
                 Formula phi = parseTreeToFormula(parseTree);
                 Formula phic = converter.convert(phi);
                 System.out.println("Formula separation: ");
-                separator.separate(phic);
+                Formula phis = separator.separate(phic);
                 System.out.println("Separation performed.");
                 System.out.println("Normalization of the formula: ");
-                Formula phin = separator.normalize();
+                phis = separator.normalize();
                 System.out.println("Normalization performed.");
-                System.out.println("Matrix generation");
-                //PureFormulaeMatrix m = getPureFormulaeMatrix(phis);
-                //matrixToJsonFile(m);
-                //System.out.println("Matrix generated.");
-                GraphViz gv = phin.fromFormulaToGraphViz();
+                GraphViz gv = phis.fromFormulaToGraphViz();
                 graphVizOutput(gv, outFile, outputEncoding);
+                System.out.println("Matrix generation");
+                PureFormulaeMatrix m = separator.getPureFormulaeMatrix(phis);
+                matrixToJsonFile(m);
+                dfaOutput(m.toString());
+                System.out.println("Matrix generated.");
             }
             if(cmd.hasOption("c")) {
                 parser.ReInit(inputSource);

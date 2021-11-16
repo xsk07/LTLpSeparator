@@ -4,6 +4,8 @@ import formula.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static formula.AtomConstant.TRUE;
 import static formula.BinaryFormula.newCombination;
 import static formula.BinaryFormula.newConjunction;
 import static formula.BooleanRules.*;
@@ -113,9 +115,6 @@ public class FormulaSeparator {
 
     public Formula normalize() {
         while (needsNormalization(root)) {
-        //int i = 1;
-        //while(i != 0) {
-            //i--;
             updateRoot(applyNormalizations(root));
         }
         return root;
@@ -125,13 +124,11 @@ public class FormulaSeparator {
     /** @return Returns the matrix representing the formula f got in input */
     public PureFormulaeMatrix getPureFormulaeMatrix(Formula f) {
         PureFormulaeMatrix matrix = new PureFormulaeMatrix();
-
         ArrayList<Formula> conjunctions = getConjunctions(f);
         for (Formula c : conjunctions) {
             ArrayList<Formula> pastList = new ArrayList<>();
             ArrayList<Formula> presentList = new ArrayList<>();
             ArrayList<Formula> futureList = new ArrayList<>();
-
             ArrayList<Formula> pureFormulas = getPureFormulae(c);
             for (Formula p : pureFormulas) {
                 switch (p.getTime()){
@@ -140,6 +137,11 @@ public class FormulaSeparator {
                     case FUTURE -> futureList.add(p);
                 }
             }
+
+            if(pastList.size() == 0) pastList.add(new AtomicFormula(TRUE));
+            if(presentList.size() == 0) presentList.add(new AtomicFormula(TRUE));
+            if(futureList.size() == 0) futureList.add(new AtomicFormula(TRUE));
+
             matrix.addTriple(
                     newConjunction(pastList),
                     newConjunction(presentList),
@@ -231,15 +233,15 @@ public class FormulaSeparator {
                     if(rj.isImmediateChild()) {rj.rewriteImmediateChild();}
                 }
 
-                JunctionPath lj = null;
+                /*JunctionPath lj = null;
                 JunctionPath rj = null;
                 if(ljs.iterator().hasNext()) lj = ljs.iterator().next();
                 if(rjs.iterator().hasNext()) rj = rjs.iterator().next();
 
-                Formula found = applyElimination(lj, rj);
+                Formula found = applyElimination(lj, rj);*/
 
 
-                /*ArrayList<JunctionPath[]> eliminationChoices = new ArrayList<>();
+                ArrayList<JunctionPath[]> eliminationChoices = new ArrayList<>();
                 ljs.forEach(lj -> rjs.forEach(rj -> eliminationChoices.add(new JunctionPath[] {lj, rj})));
                 ljs.forEach(lj -> eliminationChoices.add(new JunctionPath[] {lj, null}));
                 rjs.forEach(rj -> eliminationChoices.add(new JunctionPath[] {null, rj}));
@@ -264,7 +266,7 @@ public class FormulaSeparator {
                     }
                 } catch (InterruptedException e) {
                     exec.shutdownNow();
-                }*/
+                }
 
                 if(found != x) {
                     Formula nx = x.replaceFormula(found);

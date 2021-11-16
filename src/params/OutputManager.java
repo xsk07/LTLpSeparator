@@ -26,7 +26,7 @@ public class OutputManager {
 
         // gets the user current working directory
         final String dir = System.getProperty("user.dir");
-        final String script = "\\LTLf2DFAcall.py";
+        final String script = "/LTLf2DFAcall.py";
 
         String[] cmd = {
                 "python3",
