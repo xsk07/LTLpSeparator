@@ -17,7 +17,7 @@ import static formula.Operator.SINCE;
 import static formula.Operator.UNTIL;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static params.OutputManager.graphVizOutput;
-import static separator.FormulaEliminator.EliminationRules.*;
+import static separator.eliminator.EliminationRules.*;
 
 class EliminationRulesTest {
 

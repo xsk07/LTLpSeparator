@@ -5,8 +5,8 @@ import formula.Formula;
 import formula.Operator;
 import static formula.Operator.*;
 import static formula.Operator.IMPL;
-import static separator.FormulaEliminator.SubformulaePatterns.subformulaPattern18;
-import static separator.FormulaEliminator.SubformulaePatterns.subformulaPattern5;
+import static separator.eliminator.SubformulaePatterns.subformulaPattern18;
+import static separator.eliminator.SubformulaePatterns.subformulaPattern5;
 
 public class EliminationRule4_V2 {
 

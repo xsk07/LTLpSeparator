@@ -84,7 +84,6 @@ public enum Operator {
     /** @return Returns the image of the operator */
     public String getImage() { return image; }
 
-
     /** @return Returns true if, and only if, has a mirror operator */
     public boolean hasMirrorOperator(){ return mirrorOperator != null; }
 

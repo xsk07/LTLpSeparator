@@ -10,7 +10,7 @@ import java.io.ByteArrayInputStream;
 
 import static formula.Formula.parseTreeToFormula;
 import static org.junit.jupiter.api.Assertions.*;
-import static simplifier.FormulaSimplifier.simplify;
+import static separator.FormulaSimplifier.simplify;
 
 class FormulaSimplifierTest {
 

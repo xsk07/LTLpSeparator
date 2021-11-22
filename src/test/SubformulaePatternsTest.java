@@ -10,7 +10,7 @@ import java.io.ByteArrayInputStream;
 import static formula.Formula.parseTreeToFormula;
 import static formula.Operator.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static separator.FormulaEliminator.SubformulaePatterns.*;
+import static separator.eliminator.SubformulaePatterns.*;
 
 class SubformulaePatternsTest {
 

@@ -2,12 +2,9 @@ package formula;
 
 import graphviz.GraphViz;
 import parser.SimpleNode;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 import static formula.Operator.*;
-import static formula.TimeConstant.*;
+import static formula.TimeConstant.MIXED;
 
 /** The Formula class represents a generic LTL formula. */
 public abstract class Formula {
@@ -206,6 +203,12 @@ public abstract class Formula {
      * @param f the BinaryFormula on which perform the check */
     public boolean isRightChildOf(BinaryFormula f){
         return this == f.getRoperand();
+    }
+
+    public boolean isChildOf(OperatorFormula f) {
+        if(f instanceof UnaryFormula uf) return this.isChildOf(uf);
+        if(f instanceof BinaryFormula bf) return this.isChildOf(bf);
+        return false;
     }
 
     /** @return Returns true if, and only if, this is one of the two children of the formula got in input
@@ -490,6 +493,41 @@ public abstract class Formula {
         }
         return "";
     }
+
+    public ArrayList<Path> getPaths() {
+        /* List of paths */
+        ArrayList<Path> paths = new ArrayList<>();
+        Stack<Formula> stk = new Stack<>();
+        stk.push(this);
+        while (!stk.isEmpty()) {
+            Formula y = stk.pop();
+            if(y instanceof AtomicFormula && y != this) {
+                paths.add(new Path((OperatorFormula) this, y));
+            }
+            if(y instanceof OperatorFormula) {
+                if(y instanceof UnaryFormula uy) {
+                    stk.push(uy.getOperand());
+                }
+                if(y instanceof BinaryFormula by) {
+                    stk.push(by.getLoperand());
+                    stk.push(by.getRoperand());
+                }
+            }
+        }
+        return paths;
+    }
+
+    public int degree() {
+        ArrayList<Path> paths = this.getPaths();
+        OptionalInt d =  paths.stream().mapToInt(Path::getM).max();
+        if(d.isPresent()) return d.getAsInt();
+        return 0;
+    }
+
+
+
+
+
 
 
 

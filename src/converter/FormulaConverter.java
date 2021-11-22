@@ -21,6 +21,8 @@ public class FormulaConverter {
 
     public Formula convert(Formula phi) throws IllegalArgumentException {
 
+        System.out.println("Formula conversion.");
+
         this.setRoot(phi);
 
         /* the stack and the queue will contain by construction only OperatorFormulas */
@@ -50,6 +52,8 @@ public class FormulaConverter {
                     f.replaceFormula(applyBinaryRule(bf))
             );
         }
+
+        System.out.println("Conversion performed.");
 
         return root;
     }

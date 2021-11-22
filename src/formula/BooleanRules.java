@@ -131,7 +131,7 @@ public abstract class BooleanRules {
     /** @return Returns true if, and only if, the formula needs the application of the distributive law
      * @param f the formula which needs the application of the distributive law,
      * it should have one of AND, OR as operator */
-    public static boolean needsDistributiveLaw(BinaryFormula f){
+    public static boolean needsDistributiveLaw(BinaryFormula f) {
         if(!(f.isOperator(AND) || f.isOperator(OR))) {
             throw new IllegalArgumentException(
                     String.format("The distribution rule can be only applied to formulas that have an AND/OR operator but the formula operator is: %s", f.getOperator())

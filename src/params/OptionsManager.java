@@ -22,13 +22,19 @@ public class OptionsManager {
 
         Option s= Option.builder("s")
                 .longOpt("separate")
-                .desc("separates the formula into triples of pure past, pure present and pure future automatons")
+                .desc("separates the formula into a combination of pure past, pure present and pure future formulae")
+                .build();
+
+        Option a= Option.builder("a")
+                .longOpt("automata")
+                .desc("separates and normalize the formula and then produces the separated automata set")
                 .build();
 
         OptionGroup og = new OptionGroup();
         og.addOption(t);
         og.addOption(c);
         og.addOption(s);
+        og.addOption(a);
 
         options.addOptionGroup(og);
 

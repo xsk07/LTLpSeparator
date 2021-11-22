@@ -7,6 +7,7 @@ import org.apache.commons.cli.*;
 import parser.ParseException;
 import parser.Parser;
 import parser.SimpleNode;
+import separator.FormulaNormalizer;
 import separator.FormulaSeparator;
 import separator.PureFormulaeMatrix;
 import java.io.IOException;
@@ -15,7 +16,8 @@ import java.util.concurrent.ExecutionException;
 import static formula.Formula.parseTreeToFormula;
 import static params.InputManager.readFile;
 import static params.OptionsManager.initializeOptions;
-import static params.OutputManager.*;
+import static params.OutputManager.graphVizOutput;
+import static params.OutputManager.matrixToJsonFile;
 
 public class Main {
 
@@ -26,6 +28,7 @@ public class Main {
     private static final Parser parser = new Parser(DEFAULT_INPUT_SOURCE);
     private static final FormulaConverter converter = new FormulaConverter();
     private static final FormulaSeparator separator = new FormulaSeparator();
+    private static final FormulaNormalizer normalizer = new FormulaNormalizer();
 
     public static void main(String[] args) throws ParseException, IllegalArgumentException {
 
@@ -69,19 +72,10 @@ public class Main {
                 SimpleNode parseTree = parser.Input();
                 Formula phi = parseTreeToFormula(parseTree);
                 Formula phic = converter.convert(phi);
-                System.out.println("Formula separation: ");
-                Formula phis = separator.separate(phic);
-                System.out.println("Separation performed.");
-                System.out.println("Normalization of the formula: ");
-                phis = separator.normalize();
-                System.out.println("Normalization performed.");
+                separator.separate(phic);
+                Formula phis = separator.getRoot();
                 GraphViz gv = phis.fromFormulaToGraphViz();
                 graphVizOutput(gv, outFile, outputEncoding);
-                System.out.println("Matrix generation");
-                PureFormulaeMatrix m = separator.getPureFormulaeMatrix(phis);
-                matrixToJsonFile(m);
-                dfaOutput(m.toString());
-                System.out.println("Matrix generated.");
             }
             if(cmd.hasOption("c")) {
                 parser.ReInit(inputSource);
@@ -89,6 +83,19 @@ public class Main {
                 Formula phi = parseTreeToFormula(parseTree);
                 Formula phic = converter.convert(phi);
                 GraphViz gv = phic.fromFormulaToGraphViz();
+                graphVizOutput(gv, outFile, outputEncoding);
+            }
+            if(cmd.hasOption("a")) {
+                parser.ReInit(inputSource);
+                SimpleNode parseTree = parser.Input();
+                Formula phi = parseTreeToFormula(parseTree);
+                Formula phic = converter.convert(phi);
+                separator.separate(phic);
+                Formula phis = separator.getRoot();
+                Formula phin = normalizer.normalize(phis);
+                PureFormulaeMatrix m = normalizer.getPureFormulaeMatrix(phis);
+                matrixToJsonFile(m);
+                GraphViz gv = phin.fromFormulaToGraphViz();
                 graphVizOutput(gv, outFile, outputEncoding);
             }
         } catch (org.apache.commons.cli.ParseException | IOException | InterruptedException | ExecutionException e) {

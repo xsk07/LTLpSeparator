@@ -10,7 +10,7 @@ public abstract class ConversionRules {
      *  Rewriting rule: Oq =>* S(q, true)
      *  @param f An UnaryFormula
      *  @return An equivalent formula without the Once operator */
-    public static Formula ruleO(UnaryFormula f) throws IllegalArgumentException {
+    public static BinaryFormula ruleO(UnaryFormula f) throws IllegalArgumentException {
         if(f.getOperator() == ONCE) return existentialRule(SINCE, f, TRUE);
         throw new IllegalArgumentException (
                 String.format(
@@ -24,7 +24,7 @@ public abstract class ConversionRules {
      *  Rewriting rule: Hq =>* !S(!q, true)
      *  @param f An UnaryFormula
      *  @return An equivalent formula without the Historically operator */
-    public static Formula ruleH(UnaryFormula f) throws IllegalArgumentException {
+    public static UnaryFormula ruleH(UnaryFormula f) throws IllegalArgumentException {
         if(f.getOperator() == HIST) return universalRule(SINCE, f);
         throw new IllegalArgumentException(
                 String.format(
@@ -38,7 +38,7 @@ public abstract class ConversionRules {
      *  Rewriting rule: Yq =>* S(q, false)
      *  @param f An UnaryFormula
      *  @return An equivalent formula without the Yesterday operator */
-    public static Formula ruleY(UnaryFormula f) throws IllegalArgumentException {
+    public static BinaryFormula ruleY(UnaryFormula f) throws IllegalArgumentException {
         if(f.getOperator() == YEST) return existentialRule(SINCE, f, FALSE);
         throw new IllegalArgumentException(
                 String.format(
@@ -52,7 +52,7 @@ public abstract class ConversionRules {
      *  Rewriting rule: Fq  =>* U(q, true)
      *  @param f An UnaryFormula
      *  @return An equivalent formula without the Finally operator */
-    public static Formula ruleF(UnaryFormula f) throws IllegalArgumentException {
+    public static BinaryFormula ruleF(UnaryFormula f) throws IllegalArgumentException {
         if(f.getOperator() == FIN) return existentialRule(UNTIL, f, TRUE);
         throw new IllegalArgumentException(
                 String.format(
@@ -66,7 +66,7 @@ public abstract class ConversionRules {
      *  Rewriting rule: Xq =>* U(q, false)
      *  @param f An UnaryFormula
      *  @return An equivalent formula without the Next operator */
-    public static Formula ruleX(UnaryFormula f) throws IllegalArgumentException {
+    public static BinaryFormula ruleX(UnaryFormula f) throws IllegalArgumentException {
         if(f.getOperator() == NEXT) return existentialRule(UNTIL, f, FALSE);
         throw new IllegalArgumentException(
                 String.format(
@@ -80,7 +80,7 @@ public abstract class ConversionRules {
      *  Rewriting rule: Gq =>* !U(!q, true)
      *  @param f An UnaryFormula
      *  @return An equivalent formula without the Globally operator */
-    public static Formula ruleG(UnaryFormula f) throws IllegalArgumentException {
+    public static UnaryFormula ruleG(UnaryFormula f) throws IllegalArgumentException {
         if(f.getOperator() == GLOB) return universalRule(UNTIL, f);
         throw new IllegalArgumentException(
                 String.format(
@@ -123,7 +123,7 @@ public abstract class ConversionRules {
      *  @see #ruleY(UnaryFormula)
      *  @see #ruleF(UnaryFormula)
      *  @see #ruleX(UnaryFormula) */
-    private static Formula existentialRule(Operator bOp, UnaryFormula f, AtomConstant tVal) {
+    private static BinaryFormula existentialRule(Operator bOp, UnaryFormula f, AtomConstant tVal) {
         return new BinaryFormula(
                 bOp,
                 f.getOperand(),
@@ -135,7 +135,7 @@ public abstract class ConversionRules {
     /** Subroutine used by methods: ruleH, ruleG.
      *  @see #ruleH(UnaryFormula)
      *  @see #ruleG(UnaryFormula) */
-    private static Formula universalRule(Operator bOp, UnaryFormula f) {
+    private static UnaryFormula universalRule(Operator bOp, UnaryFormula f) {
         return (new BinaryFormula(
                         bOp,
                         f.getOperand().negate(),

@@ -26,7 +26,7 @@ public class OutputManager {
 
         // gets the user current working directory
         final String dir = System.getProperty("user.dir");
-        final String script = "/LTLf2DFAcall.py";
+        final String script = "\\LTLf2DFAcall.py";
 
         String[] cmd = {
                 "python3",
@@ -45,12 +45,14 @@ public class OutputManager {
 
     public static void matrixToJsonFile(PureFormulaeMatrix m) {
         //Write JSON file
+        System.out.println("Matrix generation.");
         try (FileWriter file = new FileWriter("matrix.json")) {
             file.write(m.toString());
             file.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Matrix generated.");
     }
 
 
