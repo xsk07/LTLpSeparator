@@ -17,16 +17,24 @@ public class OutputManager {
         System.out.println("Tree representation saved in " + file + encoding);
     }
 
-    public static void textOutput(String file, Formula f) {
-        String str = f.toString();
-        File out = new File( file + ".txt");
+    public static void textOutput(String file, Formula f) throws IOException {
+        try {
+            File out = new File(file + "txt");
+            FileWriter outWrt = new FileWriter(out);
+            outWrt.write(f.toString());
+            outWrt.flush();
+            outWrt.close();
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void dfaOutput(String matrix) throws IOException {
 
         // gets the user current working directory
         final String dir = System.getProperty("user.dir");
-        final String script = "\\LTLf2DFAcall.py";
+        final String script = "\\automata_set_generator.py";
 
         String[] cmd = {
                 "python3",

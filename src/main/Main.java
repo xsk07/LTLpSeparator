@@ -12,19 +12,19 @@ import separator.FormulaSeparator;
 import separator.PureFormulaeMatrix;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import static formula.Formula.parseTreeToFormula;
 import static params.InputManager.readFile;
 import static params.OptionsManager.initializeOptions;
-import static params.OutputManager.graphVizOutput;
-import static params.OutputManager.matrixToJsonFile;
+import static params.OutputManager.*;
 
 public class Main {
 
     private static final int DEFAULT_PROMPT_WIDTH = 160;
     private static final String DEFAULT_ENCODING = "png";
     private static final InputStream DEFAULT_INPUT_SOURCE = System.in;
-    private static final String DEFAULT_OUTPUT_FILENAME = "dout/out.";
+    private static final String DEFAULT_OUTPUT_FILENAME = "output/out.";
     private static final Parser parser = new Parser(DEFAULT_INPUT_SOURCE);
     private static final FormulaConverter converter = new FormulaConverter();
     private static final FormulaSeparator separator = new FormulaSeparator();
@@ -32,8 +32,8 @@ public class Main {
 
     public static void main(String[] args) throws ParseException, IllegalArgumentException {
 
-        String header = "Separates a LTLp formula into triples of pure past, pure present and pure future automatons\n\n";
-        String footer = "\nPlease report issues at: "; //https://github.com/xsk07/Thesis
+        String header = "Separates an LTLp formula into a combination of pure formulae and generates the corresponding separated automata set \n\n";
+        String footer = "\nPlease report issues at: "; //https://github.com/xsk07/LTLpSeparator
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
@@ -41,7 +41,7 @@ public class Main {
 
         Options options = initializeOptions();
 
-        formatter.printHelp( "LTLpSepartor", header, options, footer, true);
+        formatter.printHelp( "LTLpSeparator", header, options, footer, true);
 
         CommandLineParser cliparser = new DefaultParser();
 
@@ -55,51 +55,78 @@ public class Main {
             if(cmd.hasOption("h")) formatter.printHelp( "LTLpSepartor", header, options, footer, true);
             if(cmd.hasOption("iF")) inputSource = readFile(cmd.getOptionValue("iF"));
             if(cmd.hasOption("oF") && cmd.getOptionValue("oF").length() != 0) {
-                outFile = "dout/" + cmd.getOptionValue("oF") + ".";
+                outFile = cmd.getOptionValue("oF") + ".";
             }
             if(cmd.hasOption("oE")){
                 outputEncoding = cmd.getOptionValue("oE");
             }
             if(cmd.hasOption("t")){
-                parser.ReInit(inputSource);
-                SimpleNode parseTree = parser.Input();
-                Formula phi = parseTreeToFormula(parseTree);
-                GraphViz gv = phi.fromFormulaToGraphViz();
-                graphVizOutput(gv, outFile, outputEncoding);
-            }
-            if(cmd.hasOption("s")) {
-                parser.ReInit(inputSource);
-                SimpleNode parseTree = parser.Input();
-                Formula phi = parseTreeToFormula(parseTree);
-                Formula phic = converter.convert(phi);
-                separator.separate(phic);
-                Formula phis = separator.getRoot();
-                GraphViz gv = phis.fromFormulaToGraphViz();
-                graphVizOutput(gv, outFile, outputEncoding);
+                Formula result = parseFormula(inputSource);
+                outputTask(result, outFile, outputEncoding);
             }
             if(cmd.hasOption("c")) {
-                parser.ReInit(inputSource);
-                SimpleNode parseTree = parser.Input();
-                Formula phi = parseTreeToFormula(parseTree);
-                Formula phic = converter.convert(phi);
-                GraphViz gv = phic.fromFormulaToGraphViz();
-                graphVizOutput(gv, outFile, outputEncoding);
+                Formula result = performConversion(parseFormula(inputSource));
+                outputTask(result, outFile, outputEncoding);
+            }
+            if(cmd.hasOption("s")) {
+                Formula result = performSeparation(
+                        performConversion(
+                                parseFormula(inputSource)
+                        )
+                );
+                outputTask(result, outFile, outputEncoding);
             }
             if(cmd.hasOption("a")) {
-                parser.ReInit(inputSource);
-                SimpleNode parseTree = parser.Input();
-                Formula phi = parseTreeToFormula(parseTree);
-                Formula phic = converter.convert(phi);
-                separator.separate(phic);
-                Formula phis = separator.getRoot();
-                Formula phin = normalizer.normalize(phis);
-                PureFormulaeMatrix m = normalizer.getPureFormulaeMatrix(phis);
+                Formula result = performNormalization(
+                        performSeparation(
+                                performConversion(
+                                        parseFormula(inputSource)
+                                )
+                        )
+                );
+                PureFormulaeMatrix m = normalizer.getPureFormulaeMatrix(result);
                 matrixToJsonFile(m);
-                GraphViz gv = phin.fromFormulaToGraphViz();
-                graphVizOutput(gv, outFile, outputEncoding);
+                System.out.println(m.getDegree());
+                outputTask(result, outFile, outputEncoding);
             }
         } catch (org.apache.commons.cli.ParseException | IOException | InterruptedException | ExecutionException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static Formula parseFormula(InputStream inputSource) throws ParseException {
+        parser.ReInit(inputSource);
+        SimpleNode parseTree = parser.Input();
+        Formula phi = parseTreeToFormula(parseTree);
+        return phi;
+    }
+
+    private static Formula performConversion(Formula phi) {
+        System.out.println("Formula conversion.");
+        Formula phic = converter.convert(phi);
+        System.out.println("Conversion performed.");
+        return phic;
+    }
+
+    private static Formula performSeparation(Formula phi) throws ExecutionException, InterruptedException {
+        System.out.println("Formula separation, applied rules: ");
+        Formula phis = separator.separate(phi);
+        System.out.println("Separation performed.");
+        return phis;
+    }
+
+    private static Formula performNormalization(Formula phi) {
+        System.out.println("Normalization.");
+        Formula phin = normalizer.normalize(phi);
+        System.out.println("Normalization performed.");
+        return phin;
+    }
+
+    private static void outputTask(Formula result, String file, String encoding) throws IOException {
+        if(Objects.equals(encoding, "txt")) textOutput(file, result);
+        else {
+            GraphViz gv = result.fromFormulaToGraphViz();
+            graphVizOutput(gv, file, encoding);
         }
     }
 

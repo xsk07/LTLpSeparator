@@ -15,7 +15,7 @@ public class FormulaEliminator {
     /** Applies the correct elimination for the binary formula got in input.
      *  @return returns the formula after being applied the corresponding elimination,
      *  if no elimination can be applied returns the same input formula */
-    public static Formula applyElimination(Junction lj, Junction rj) {
+    public static OperatorFormula applyElimination(Junction lj, Junction rj) {
 
         BinaryFormula x = null;
         if(lj != null) x = (BinaryFormula) lj.getX();

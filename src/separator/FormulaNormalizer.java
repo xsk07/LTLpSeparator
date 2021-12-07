@@ -9,6 +9,7 @@ import static formula.BinaryFormula.newConjunction;
 import static formula.BooleanRules.*;
 import static formula.Operator.AND;
 import static formula.Operator.OR;
+import static separator.FormulaSimplifier.simplify;
 
 public class FormulaNormalizer {
 
@@ -106,11 +107,10 @@ public class FormulaNormalizer {
 
     public Formula normalize(Formula f) {
         root = f;
-        System.out.println("Normalization.");
         while (needsNormalization(root)) {
             updateRoot(applyNormalizations(root));
         }
-        System.out.println("Normalization performed.");
+        if(root instanceof BinaryFormula br) root = simplify(br);
         return root;
     }
 

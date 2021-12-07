@@ -27,7 +27,7 @@ class DegreeTest {
         Junction topJunction = paths.get(1).getTopJunction();
         System.out.println("Top junction: " + topJunction);
         System.out.println("Top junction k: " + topJunction.getK());
-        System.out.println("Max k of productions of degree m: "  +  maxKofDegreeM(f, m));
+        System.out.println("Max k of productions of getDegree m: "  +  maxKofDegreeM(f, m));
     }
 
     private Formula parseFormula(String str) throws ParseException {

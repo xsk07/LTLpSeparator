@@ -106,7 +106,7 @@ public class FormulaSeparator {
                             Formula newOperand = newConjunction(operandsDeepCopy);
                             BinaryFormula newX = new BinaryFormula(x.getOperator(), newOperand, x.getRoperand().deepCopy());
                             /* ensure that the formula obtained by the application of Lemma A2 produces
-                            *  a new formula of lower degree m or equal degree of m but less or equal k degree */
+                            *  a new formula of lower getDegree m or equal getDegree of m but less or equal k getDegree */
                             int prevM = x.degree();
                             int mNewX  = newX.degree();
                             if(mNewX <= prevM) {
@@ -147,7 +147,7 @@ public class FormulaSeparator {
                             Formula newOperand = newConjunction(operandsDeepCopy);
                             BinaryFormula newX = new BinaryFormula(x.getOperator(), newOperand, x.getRoperand().deepCopy());
                             /* ensure that the formula obtained by the application of Lemma A2 produces
-                             *  a new formula of lower degree m or equal degree of m but less or equal k degree */
+                             *  a new formula of lower getDegree m or equal getDegree of m but less or equal k getDegree */
                             int prevM = x.degree();
                             int mNewX  = newX.degree();
                             if(mNewX <= prevM) {
@@ -189,7 +189,7 @@ public class FormulaSeparator {
                             Formula newOperand = newConjunction(operandsDeepCopy);
                             BinaryFormula newX = new BinaryFormula(x.getOperator(), newOperand, x.getRoperand().deepCopy());
                             /* ensure that the formula obtained by the application of Lemma A2 produces
-                             *  a new formula of lower degree m or equal degree of m but less or equal k degree */
+                             *  a new formula of lower getDegree m or equal getDegree of m but less or equal k getDegree */
                             int prevM = x.degree();
                             int mNewX  = newX.degree();
                             if(mNewX <= prevM) {
@@ -250,7 +250,7 @@ public class FormulaSeparator {
                             Formula newOperand = newConjunction(operandsDeepCopy);
                             BinaryFormula newX = new BinaryFormula(x.getOperator(), x.getLoperand().deepCopy(), newOperand);
                             /* ensure that the formula obtained by the application of Lemma A2 produces
-                             *  a new formula of lower degree m or equal degree of m but less or equal k degree */
+                             *  a new formula of lower getDegree m or equal getDegree of m but less or equal k getDegree */
                             int prevM = x.degree();
                             int mNewX = newX.degree();
                             if (mNewX <= prevM) {
@@ -293,7 +293,7 @@ public class FormulaSeparator {
                             Formula newOperand = newConjunction(operandsDeepCopy);
                             BinaryFormula newX = new BinaryFormula(x.getOperator(), x.getLoperand().deepCopy(), newOperand);
                             /* ensure that the formula obtained by the application of Lemma A2 produces
-                             *  a new formula of lower degree m or equal degree of m but less or equal k degree */
+                             *  a new formula of lower getDegree m or equal getDegree of m but less or equal k getDegree */
                             int prevM = x.degree();
                             int mNewX = newX.degree();
                             if (mNewX <= prevM) {
@@ -320,8 +320,6 @@ public class FormulaSeparator {
      * @return A Formula which is a combination of pure past, pure present and pure future formulas
      * @param f the formula which needs to be separated */
     public Formula separate(Formula f) throws ExecutionException, InterruptedException {
-        System.out.println("Formula separation, applied rules: ");
-
         root = f; // initialize the root with the formula f
         Stack<BinaryFormula> xs = initializeXStack(f); // initialize the stack of xs
         // while there is some x to separate
@@ -369,10 +367,10 @@ public class FormulaSeparator {
                             js -> eliminationProductions.add(applyElimination(js[0], js[1]))
                     );
 
-                    /* 1. determine the productions with the min degree */
+                    /* 1. determine the productions with the min getDegree */
                     OptionalInt minDegree = eliminationProductions.stream().mapToInt(Formula::degree).min();
                     List<Formula> minDegreeProductions = eliminationProductions.stream().filter(p -> p.degree() == minDegree.getAsInt()).toList();
-                    /* 2. map the productions of minimum degree to their maximum k value and then
+                    /* 2. map the productions of minimum getDegree to their maximum k value and then
                      *    choose one of those with the minimum k value */
                     OptionalInt minK  = minDegreeProductions.stream().mapToInt(p -> maxKofDegreeM(p, minDegree.getAsInt())).min();
                     List<Formula> candidates = eliminationProductions.stream().filter(p-> maxKofDegreeM(p, minDegree.getAsInt()) == minK.getAsInt()).toList();
@@ -382,7 +380,6 @@ public class FormulaSeparator {
 
                     Optional<Formula> chosen = Optional.ofNullable(candidates.iterator().next());
                     Formula found = chosen.isPresent() ? chosen.get() : x;
-
 
                     //found = eliminationProductions.get(1);
                     //System.out.println(found);
@@ -439,8 +436,6 @@ public class FormulaSeparator {
                 }
             }
         }
-        System.out.println("Separation performed.");
-
         return root;
     }
 

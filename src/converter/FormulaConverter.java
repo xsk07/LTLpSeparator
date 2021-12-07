@@ -1,11 +1,12 @@
 package converter;
 
 import formula.*;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
+import java.util.*;
+import static converter.BackConversionRules.*;
 import static formula.BooleanRules.*;
 import static converter.ConversionRules.*;
+import static formula.Operator.*;
+import static formula.Operator.YEST;
 
 public class FormulaConverter {
 
@@ -19,9 +20,9 @@ public class FormulaConverter {
         if(f.getParent() == null && f != root) setRoot(f);
     }
 
-    public Formula convert(Formula phi) throws IllegalArgumentException {
 
-        System.out.println("Formula conversion.");
+    /** */
+    public Formula convert(Formula phi) throws IllegalArgumentException {
 
         this.setRoot(phi);
 
@@ -52,9 +53,6 @@ public class FormulaConverter {
                     f.replaceFormula(applyBinaryRule(bf))
             );
         }
-
-        System.out.println("Conversion performed.");
-
         return root;
     }
 
@@ -88,6 +86,61 @@ public class FormulaConverter {
             case UNLESS -> ruleW(f);
             default -> f;
         };
+    }
+
+    public void backConversion(Formula phi) {
+        Queue<Formula> q = new LinkedList<>();
+        q.add(phi);
+        while (!q.isEmpty()) {
+            Formula f = q.remove();
+            if(f instanceof UnaryFormula uf) {
+
+            }
+            if(f instanceof BinaryFormula bf) {
+                if(derivedOperator(bf) != null) {
+                    switch(derivedOperator(bf)) {
+                        case FIN: {
+                            UnaryFormula nf = (UnaryFormula) f.replaceFormula(backF(bf));
+                            updateRoot(nf);
+                            break;
+                        }
+                        case GLOB: {
+                            OperatorFormula p = f.getParent();
+                            updateRoot(p.replaceFormula(backG(bf)));
+                            break;
+                        }
+                        case HIST: {
+                            OperatorFormula p = f.getParent();
+                            updateRoot(p.replaceFormula(backH(bf)));
+                            break;
+                        }
+                        case ONCE: {
+                            updateRoot(f.replaceFormula(backO(bf)));
+                            break;
+                        }
+                        case NEXT: {
+                            updateRoot(f.replaceFormula(backX(bf)));
+                            break;
+                        }
+                        case YEST: {
+                            updateRoot(f.replaceFormula(backY(bf)));
+                            break;
+                        }
+                        default: break;
+                    }
+                }
+            }
+        }
+    }
+
+    private static Operator derivedOperator(BinaryFormula f) {
+        if(patternG(f)) return GLOB; // !U(!q, true) =>* Gq
+        if(patternF(f)) return FIN;  // U(q, true) =>* Fq
+        if(patternX(f)) return NEXT; // U(q, false) =>* Xq
+        if(patternH(f)) return HIST; // !S(!q, true) =>* Hq
+        if(patternO(f)) return ONCE; // S(q, true)  =>* Oq
+        if(patternY(f)) return YEST; // S(q, false) =>* Yq
+        return null;
     }
 
 }

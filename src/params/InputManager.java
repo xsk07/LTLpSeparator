@@ -9,8 +9,7 @@ public class InputManager {
 
     public static InputStream readFile(String filename) throws IOException {
         File file = new File(filename);
-        InputStream fileStream = new FileInputStream(file);
-        return fileStream;
+        return new FileInputStream(file);
     }
 
 }

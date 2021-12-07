@@ -63,5 +63,9 @@ public class PureFormulaeMatrix {
 
     public void print() { System.out.println(this); }
 
+    public int getDegree() {
+        return matrix.size();
+    }
+
 
 }
