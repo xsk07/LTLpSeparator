@@ -34,7 +34,7 @@ public class OutputManager {
 
         // gets the user current working directory
         final String dir = System.getProperty("user.dir");
-        final String script = "\\automata_set_generator.py";
+        final String script = "\\sepAutSetGen.py";
 
         String[] cmd = {
                 "python3",
