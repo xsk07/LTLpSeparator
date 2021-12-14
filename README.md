@@ -22,5 +22,5 @@ For the generation of DFAs, LTLpSeparator uses LTLf2DFA with all its dependencie
 # Contact
 
 Please contact the developer, Seweryn Kaniowski, for any information, comment or bug reporting:
-severinokaniowski@mail.com
+severinokaniowski@gmail.com
  
