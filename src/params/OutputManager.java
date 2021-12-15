@@ -30,17 +30,13 @@ public class OutputManager {
         }
     }
 
-    public static void dfaOutput(String matrix) throws IOException {
+    public static void dfaOutput(PureFormulaeMatrix m) throws IOException {
+        System.out.println("Separated automata set generation...");
 
         // gets the user current working directory
         final String dir = System.getProperty("user.dir");
-        final String script = "\\sepAutSetGen.py";
-
-        String[] cmd = {
-                "python3",
-                dir + script,
-                String.format("\" %s \"", matrix)
-        };
+        final String script = "/sepAutSetGen.py";
+        String[] cmd = {"python3", dir + script};
 
         try{
             Process p = Runtime.getRuntime().exec(cmd);
@@ -49,11 +45,13 @@ public class OutputManager {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+
+        System.out.printf("Separated automata set with degree %d generated.", m.getDegree());
     }
 
     public static void matrixToJsonFile(PureFormulaeMatrix m) {
         //Write JSON file
-        System.out.println("Matrix generation.");
+        System.out.println("Matrix generation...");
         try (FileWriter file = new FileWriter("matrix.json")) {
             file.write(m.toString());
             file.flush();
