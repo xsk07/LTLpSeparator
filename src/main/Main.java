@@ -89,6 +89,7 @@ public class Main {
                 matrixToJsonFile(m);
                 //result = converter.backConversion(result);
                 outputTask(result, outFile, outputEncoding);
+                dfaOutput(m);
             }
         } catch (org.apache.commons.cli.ParseException | IOException | InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -103,21 +104,21 @@ public class Main {
     }
 
     private static Formula performConversion(Formula phi) {
-        System.out.println("Formula conversion.");
+        System.out.println("Formula conversion...");
         Formula phic = converter.convert(phi);
         System.out.println("Conversion performed.");
         return phic;
     }
 
     private static Formula performSeparation(Formula phi) throws ExecutionException, InterruptedException {
-        System.out.println("Formula separation, applied rules: ");
+        System.out.println("Formula separation, applied rules:");
         Formula phis = separator.separate(phi);
         System.out.println("Separation performed.");
         return phis;
     }
 
     private static Formula performNormalization(Formula phi) {
-        System.out.println("Normalization.");
+        System.out.println("Normalization, applied rules:");
         Formula phin = normalizer.normalize(phi);
         System.out.println("Normalization performed.");
         return phin;
