@@ -9,8 +9,6 @@ import parser.Parser;
 import parser.SimpleNode;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-
-
 import static formula.Formula.parseTreeToFormula;
 import static separator.FormulaSeparator.maxKofDegreeM;
 

@@ -243,13 +243,4 @@ public abstract class BooleanRules {
         );
     }
 
-
-
-
-
-
-
-
-
-
 }

@@ -127,5 +127,51 @@ public abstract class BackConversionRules {
         return new UnaryFormula(GLOB, q);
     }
 
+    public static boolean patternW(BinaryFormula f) {
+        if(f.isOperator(OR)) {
+            Formula lc = f.getLoperand();
+            Formula rc = f.getRoperand();
+            BinaryFormula u;
+            UnaryFormula g;
+            boolean lcG_and_rcU = lc.isOperator(GLOB) && rc.isOperator(UNTIL);
+            boolean lcU_and_rcG = lc.isOperator(UNTIL) && rc.isOperator(GLOB);
+            if(lcU_and_rcG || lcG_and_rcU) {
+                // U(p,q) | Gq
+                if(lc.isOperator(UNTIL) && rc.isOperator(GLOB)) {
+                    u = (BinaryFormula) lc;
+                    g = (UnaryFormula) rc;
+                }
+                // Gq | U(p,q)
+                // lc.isOperator(GLOB) && rc.isOperator(UNTIL)
+                else {
+                    g = (UnaryFormula) lc;
+                    u = (BinaryFormula) rc;
+                }
+                Formula gChild = g.getOperand();
+                Formula q = u.getRoperand();
+                return gChild.equalTo(q);
+            }
+        }
+        return false;
+    }
+
+    /** (U(p,q) | Gq) =>* W(p,q) */
+    public static BinaryFormula backW(BinaryFormula f) {
+
+        if(!patternW(f)) throw new IllegalArgumentException(
+                "The formula must be of the form U(p,q) | Gq"
+        );
+
+        Formula lc = f.getLoperand();
+        Formula rc = f.getRoperand();
+        BinaryFormula u;
+        // U(p,q) | Gq
+        boolean lcU_and_rcG = lc.isOperator(UNTIL) && rc.isOperator(GLOB);
+        if(lcU_and_rcG) u = (BinaryFormula) lc;
+        // Gq | U(p,q)
+        // if(lc.isOperator(GLOB) && rc.isOperator(UNTIL))
+        else u = (BinaryFormula) rc;
+        return new BinaryFormula(UNLESS, u.getRoperand(), u.getLoperand());
+    }
 
 }

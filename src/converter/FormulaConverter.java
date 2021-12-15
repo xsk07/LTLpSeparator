@@ -7,6 +7,7 @@ import static formula.BooleanRules.*;
 import static converter.ConversionRules.*;
 import static formula.Operator.*;
 import static formula.Operator.YEST;
+import static separator.FormulaSimplifier.simplify;
 
 public class FormulaConverter {
 
@@ -21,12 +22,11 @@ public class FormulaConverter {
     }
 
 
-    /** */
     public Formula convert(Formula phi) throws IllegalArgumentException {
 
         this.setRoot(phi);
 
-        /* the stack and the queue will contain by construction only OperatorFormulas */
+        /* the stack and the queue will contain by construction only OperatorFormula's */
         Stack<Formula> stack = new Stack<>();
         Queue<Formula> queue = new LinkedList<>();
         /* if phi is an OperatorFormula then initialize the queue with it */
@@ -88,15 +88,45 @@ public class FormulaConverter {
         };
     }
 
-    public void backConversion(Formula phi) {
-        Queue<Formula> q = new LinkedList<>();
-        q.add(phi);
-        while (!q.isEmpty()) {
-            Formula f = q.remove();
-            if(f instanceof UnaryFormula uf) {
+    public Formula backConversion(Formula phi) {
+        this.setRoot(phi);
 
+        /* the stack and the queue will contain by construction only OperatorFormulae */
+        Stack<Formula> stack = new Stack<>();
+        Queue<Formula> queue = new LinkedList<>();
+        /* if phi is an OperatorFormula then initialize the queue with it */
+        if(phi instanceof OperatorFormula) queue.add(phi);
+
+        while(!queue.isEmpty()) {
+            OperatorFormula f = (OperatorFormula) queue.remove();
+            stack.push(f);
+            if(f instanceof UnaryFormula uf) {
+                if(uf.getOperand() instanceof OperatorFormula) queue.add(uf.getOperand());
             }
             if(f instanceof BinaryFormula bf) {
+                if(bf.getLoperand() instanceof OperatorFormula) queue.add(bf.getLoperand());
+                if(bf.getRoperand() instanceof OperatorFormula) queue.add(bf.getRoperand());
+            }
+        }
+
+        while (!stack.isEmpty()) {
+            Formula f = stack.pop();
+
+            if(f instanceof UnaryFormula uf) {
+                if(uf.isOperator(NOT)) {
+                    if(needTruthValueNegation(uf)){
+                        Formula nf = truthValueNegation(uf);
+                        uf.replaceFormula(nf);
+                        updateRoot(nf);
+                    }
+                    if(needsInvolution(uf)){
+                        Formula nf = involution(uf);
+                        uf.replaceFormula(nf);
+                        updateRoot(nf);
+                    }
+                }
+            }
+            else if(f instanceof BinaryFormula bf) {
                 if(derivedOperator(bf) != null) {
                     switch(derivedOperator(bf)) {
                         case FIN: {
@@ -126,20 +156,32 @@ public class FormulaConverter {
                             updateRoot(f.replaceFormula(backY(bf)));
                             break;
                         }
+                        case UNLESS: {
+                            updateRoot(f.replaceFormula(backW(bf)));
+                            break;
+                        }
                         default: break;
                     }
                 }
+                // perform some simplifications of the formula based on rules of the boolean logic
+                else {
+                    Formula nf = simplify(bf);
+                    bf.replaceFormula(nf);
+                    updateRoot(nf);
+                }
             }
         }
+        return getRoot();
     }
 
     private static Operator derivedOperator(BinaryFormula f) {
-        if(patternG(f)) return GLOB; // !U(!q, true) =>* Gq
-        if(patternF(f)) return FIN;  // U(q, true) =>* Fq
-        if(patternX(f)) return NEXT; // U(q, false) =>* Xq
-        if(patternH(f)) return HIST; // !S(!q, true) =>* Hq
-        if(patternO(f)) return ONCE; // S(q, true)  =>* Oq
-        if(patternY(f)) return YEST; // S(q, false) =>* Yq
+        if(patternG(f)) return GLOB; // !U(!q, true)
+        if(patternF(f)) return FIN;  // U(q, true)
+        if(patternX(f)) return NEXT; // U(q, false)
+        if(patternH(f)) return HIST; // !S(!q, true)
+        if(patternO(f)) return ONCE; // S(q, true)
+        if(patternY(f)) return YEST; // S(q, false)
+        if(patternW(f)) return UNLESS; // U(p,q) | Gq
         return null;
     }
 

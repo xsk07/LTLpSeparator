@@ -24,7 +24,7 @@ public class Main {
     private static final int DEFAULT_PROMPT_WIDTH = 160;
     private static final String DEFAULT_ENCODING = "png";
     private static final InputStream DEFAULT_INPUT_SOURCE = System.in;
-    private static final String DEFAULT_OUTPUT_FILENAME = "output/out.";
+    private static final String DEFAULT_OUTPUT_FILENAME = "out.";
     private static final Parser parser = new Parser(DEFAULT_INPUT_SOURCE);
     private static final FormulaConverter converter = new FormulaConverter();
     private static final FormulaSeparator separator = new FormulaSeparator();
@@ -33,7 +33,7 @@ public class Main {
     public static void main(String[] args) throws ParseException, IllegalArgumentException {
 
         String header = "Separates an LTLp formula into a combination of pure formulae and generates the corresponding separated automata set \n\n";
-        String footer = "\nPlease report issues at: "; //https://github.com/xsk07/LTLpSeparator
+        String footer = "\nPlease report issues at:  https://github.com/xsk07/LTLpSeparator";
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
@@ -74,6 +74,7 @@ public class Main {
                                 parseFormula(inputSource)
                         )
                 );
+                //result = converter.backConversion(result);
                 outputTask(result, outFile, outputEncoding);
             }
             if(cmd.hasOption("a")) {
@@ -86,7 +87,7 @@ public class Main {
                 );
                 PureFormulaeMatrix m = normalizer.getPureFormulaeMatrix(result);
                 matrixToJsonFile(m);
-                System.out.println(m.getDegree());
+                //result = converter.backConversion(result);
                 outputTask(result, outFile, outputEncoding);
             }
         } catch (org.apache.commons.cli.ParseException | IOException | InterruptedException | ExecutionException e) {
